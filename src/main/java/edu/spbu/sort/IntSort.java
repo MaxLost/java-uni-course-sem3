@@ -25,11 +25,7 @@ public class IntSort {
 
     public static void quickSort(int[] array, int begin, int end) {
 
-        if (begin < end) {
-
-            if (begin == end - 1) {
-                return;
-            }
+        if (begin < end - 1) {
 
             if (end - begin < 3) {
                 if (array[begin] > array[end - 1]) {
@@ -56,7 +52,7 @@ public class IntSort {
             }
 
             int edge = begin;
-            for (int i = begin; i < (end - 1); i++) {
+            for (int i = begin; i < end - 1; i++) {
                 if (array[i] < pivot) {
                     int temp = array[edge];
                     array[edge] = array[i];
