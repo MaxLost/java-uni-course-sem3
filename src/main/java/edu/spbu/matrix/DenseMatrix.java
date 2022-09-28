@@ -10,9 +10,9 @@ import java.util.Scanner;
  */
 public class DenseMatrix implements Matrix
 {
-	private final double[][] matrix;
-	private final int row_count;
-	private final int col_count;
+	private final double[][] data;
+	public final int row_count;
+	public final int col_count;
 	/**
 	 * Loads dense matrix from file
 	 * @param fileName - name of file with matrix data
@@ -32,11 +32,11 @@ public class DenseMatrix implements Matrix
 				this.col_count = line.split(" ").length;
 			}
 
-			this.matrix = new double[this.row_count][this.col_count];
+			this.data = new double[this.row_count][this.col_count];
 
 			for (int i = 0; i < this.row_count; i++) {
 				for (int j = 0; j < this.col_count; j++) {
-					this.matrix[i][j] = Double.parseDouble(scanner.next());
+					this.data[i][j] = Double.parseDouble(scanner.next());
 				}
 			}
 
@@ -45,32 +45,65 @@ public class DenseMatrix implements Matrix
 		}
 	}
 
-	public double getElement(int x, int y) {
+	public DenseMatrix(int row_count, int col_count, double[][] data) {
+		if (row_count == data.length & col_count == data[0].length) {
+			this.row_count = row_count;
+			this.col_count = col_count;
+			this.data = data;
+		}
+		else {
+			throw new RuntimeException("Size arguments didn't match data array size");
+		}
+	}
+
+	@Override public double getElement(int x, int y) {
 		if (y >= row_count | x >= col_count) {
 			throw new RuntimeException("Invalid coordinates");
 		}
 		else {
-			return matrix[x][y];
+			return data[y][x];
 		}
 	}
 
 	/**
-	 * однопоточное умнджение матриц
+	 * Single-thread matrix multiplication
 	 * должно поддерживаться для всех 4-х вариантов
+	 * <p>
+	 * (1) A@B = C
 	 *
-	 * @param o
-	 * @return
+	 * @param o - B matrix in (1)
+	 * @return - result of matrix multiplication, C matrix in (1)
 	 */
 	@Override public Matrix mul(Matrix o)
 	{
+		if (o instanceof DenseMatrix) {
+			DenseMatrix b = (DenseMatrix) o;
+			if (this.col_count == b.row_count) {
+				double[][] result = new double[this.row_count][this.col_count];
+				for (int i = 0; i < this.row_count; i++) {
+					for (int j = 0; j < this.col_count; j++) {
+						for (int k = 0; k < b.col_count; k++) {
+							result[i][j] += this.data[i][k] * b.data[k][j];
+						}
+					}
+				}
+				return new DenseMatrix(this.row_count, this.col_count, result);
+			}
+			else {
+				throw new RuntimeException("Unable to multiply matrixes due to their sizes");
+			}
+		}
+
 		return null;
 	}
 
 	/**
-	 * многопоточное умножение матриц
+	 * Multi-thread matrix multiplication
+	 * <p>
+	 * (1) A@B = C
 	 *
-	 * @param o
-	 * @return
+	 * @param o - B matrix in (1)
+	 * @return - result of matrix multiplication, C matrix in (1)
 	 */
 	@Override public Matrix dmul(Matrix o)
 	{
@@ -79,11 +112,42 @@ public class DenseMatrix implements Matrix
 
 	/**
 	 * спавнивает с обоими вариантами
-	 * @param o
-	 * @return
+	 * @param o - Object with which DenseMatrix comparing
+	 * @return - true if objects equals, false if not
 	 */
-	@Override public boolean equals(Object o) {
+	public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+		else if (o instanceof DenseMatrix) {
+			if (this.row_count != ((DenseMatrix) o).row_count | this.col_count != ((DenseMatrix) o).col_count) {
+				return false;
+			}
+			for (int i = 0; i < this.col_count; i++) {
+				for (int j = 0; j < this.row_count; j++) {
+					if (((DenseMatrix) o).getElement(i, j) - this.getElement(i, j) > 0.0001) {
+						return false;
+					}
+				}
+
+			}
+			return true;
+		}
+
+
 		return false;
+	}
+
+	public String toString() {
+		StringBuilder str = new StringBuilder();
+		for (int i = 0; i < this.row_count; i++) {
+			for (double x : this.data[i]) {
+				str.append(x).append(" ");
+			}
+			str.append("\n");
+		}
+		return str.toString();
 	}
 
 }

@@ -12,6 +12,9 @@ public class SparseMatrix implements Matrix
   public SparseMatrix(String fileName) {
 
   }
+
+  @Override public double getElement(int x, int y) { return 0; }
+
   /**
    * однопоточное умнджение матриц
    * должно поддерживаться для всех 4-х вариантов
