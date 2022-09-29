@@ -13,6 +13,8 @@ public class DenseMatrix implements Matrix
 	private final double[][] data;
 	public final int row_count;
 	public final int col_count;
+
+	private int hashCode = 0;
 	/**
 	 * Loads dense matrix from file
 	 * @param fileName - name of file with matrix data
@@ -110,6 +112,18 @@ public class DenseMatrix implements Matrix
 		return null;
 	}
 
+	public int hashCode() {
+		if (this.hashCode == 0) {
+			int a = 0, b = 0;
+			for (int i = 0; i < this.col_count; i++) {
+				a += this.getElement(i, i);
+				b += this.getElement(this.col_count - i, i);
+			}
+			this.hashCode = a ^ b;
+		}
+		return this.hashCode;
+	}
+
 	/**
 	 * спавнивает с обоими вариантами
 	 * @param o - Object with which DenseMatrix comparing
@@ -124,15 +138,17 @@ public class DenseMatrix implements Matrix
 			if (this.row_count != ((DenseMatrix) o).row_count | this.col_count != ((DenseMatrix) o).col_count) {
 				return false;
 			}
-			for (int i = 0; i < this.col_count; i++) {
-				for (int j = 0; j < this.row_count; j++) {
-					if (((DenseMatrix) o).getElement(i, j) - this.getElement(i, j) > 0.0001) {
-						return false;
+			if (this.hashCode() == o.hashCode()) {
+				for (int i = 0; i < this.col_count; i++) {
+					for (int j = 0; j < this.row_count; j++) {
+						if (((DenseMatrix) o).getElement(i, j) - this.getElement(i, j) > 0.0001) {
+							return false;
+						}
 					}
-				}
 
+				}
+				return true;
 			}
-			return true;
 		}
 
 
