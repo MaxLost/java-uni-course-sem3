@@ -41,11 +41,29 @@ public class MatrixTest
 		try {
 			m2.mul(m1);
 		} catch (RuntimeException e) {
-			if (e.getMessage().equals("Unable to multiply matrixes due to their sizes")) {
+			if (e.getMessage().equals("Unable to multiply matrices due to their sizes")) {
 				catched = true;
 			}
 		}
 		if (!catched) { fail("Multiplication with wrong sizes happened"); }
+	}
+
+	@Test
+	public void mullDD1() {
+		Matrix m1 = new DenseMatrix("dense_mul_test_m1.txt");
+		Matrix m2 = new DenseMatrix("dense_mul_test_m2.txt");
+		Matrix result = m1.mul(m2);
+		Matrix expected = new DenseMatrix("dense_mul_test_m1xm2.txt");
+		assertEquals(result, expected);
+	}
+
+	@Test
+	public void mullDD2() {
+		Matrix m1 = new DenseMatrix("dense_mul_test_m1.txt");
+		Matrix m2 = new DenseMatrix("dense_mul_test_m2.txt");
+		Matrix result = m2.mul(m1);
+		Matrix expected = new DenseMatrix("dense_mul_test_m2xm1.txt");
+		assertEquals(result, expected);
 	}
 
 	/*

@@ -37,8 +37,9 @@ public class DenseMatrix implements Matrix
 			this.data = new double[this.row_count][this.col_count];
 
 			for (int i = 0; i < this.row_count; i++) {
+				String[] numbers = scanner.nextLine().split(" ");
 				for (int j = 0; j < this.col_count; j++) {
-					this.data[i][j] = Double.parseDouble(scanner.next());
+					this.data[i][j] = Double.parseDouble(numbers[j]);
 				}
 			}
 
@@ -59,7 +60,7 @@ public class DenseMatrix implements Matrix
 	}
 
 	@Override public double getElement(int x, int y) {
-		if (y >= row_count | x >= col_count) {
+		if (y >= this.row_count | x >= this.col_count) {
 			throw new RuntimeException("Invalid coordinates");
 		}
 		else {
@@ -76,23 +77,25 @@ public class DenseMatrix implements Matrix
 	 * @param o - B matrix in (1)
 	 * @return - result of matrix multiplication, C matrix in (1)
 	 */
-	@Override public Matrix mul(Matrix o)
-	{
+	@Override public Matrix mul(Matrix o) {
+
 		if (o instanceof DenseMatrix) {
+
 			DenseMatrix b = (DenseMatrix) o;
 			if (this.col_count == b.row_count) {
-				double[][] result = new double[this.row_count][this.col_count];
+
+				double[][] result = new double[this.row_count][b.col_count];
 				for (int i = 0; i < this.row_count; i++) {
-					for (int j = 0; j < this.col_count; j++) {
-						for (int k = 0; k < b.col_count; k++) {
-							result[i][j] += this.data[i][k] * b.data[k][j];
+					for (int j = 0; j < b.col_count; j++) {
+						for (int k = 0; k < this.col_count; k++) {
+							result[i][j] += this.getElement(k, i) * b.getElement(j, k);
 						}
 					}
 				}
-				return new DenseMatrix(this.row_count, this.col_count, result);
+				return new DenseMatrix(this.row_count, b.col_count, result);
 			}
 			else {
-				throw new RuntimeException("Unable to multiply matrixes due to their sizes");
+				throw new RuntimeException("Unable to multiply matrices due to their sizes");
 			}
 		}
 
@@ -115,9 +118,9 @@ public class DenseMatrix implements Matrix
 	public int hashCode() {
 		if (this.hashCode == 0) {
 			int a = 0, b = 0;
-			for (int i = 0; i < this.col_count; i++) {
+			for (int i = 0; i < Math.min(this.col_count, this.row_count); i++) {
 				a += this.getElement(i, i);
-				b += this.getElement(this.col_count - i, i);
+				b += this.getElement(this.col_count - i - 1, i);
 			}
 			this.hashCode = a ^ b;
 		}
@@ -141,7 +144,8 @@ public class DenseMatrix implements Matrix
 			if (this.hashCode() == o.hashCode()) {
 				for (int i = 0; i < this.col_count; i++) {
 					for (int j = 0; j < this.row_count; j++) {
-						if (((DenseMatrix) o).getElement(i, j) - this.getElement(i, j) > 0.0001) {
+						if (Math.abs(((DenseMatrix) o).getElement(i, j)) - Math.abs(this.getElement(i, j)) > 0.0001 |
+								Math.abs(((DenseMatrix) o).getElement(i, j)) - Math.abs(this.getElement(i, j)) < -0.0001) {
 							return false;
 						}
 					}
