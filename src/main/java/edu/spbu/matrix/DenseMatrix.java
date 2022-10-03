@@ -14,7 +14,7 @@ public class DenseMatrix implements Matrix
 	public final int row_count;
 	public final int col_count;
 
-	private int hashCode = 0;
+	private final int hashCode;
 	/**
 	 * Loads dense matrix from file
 	 * @param fileName - name of file with matrix data
@@ -30,29 +30,42 @@ public class DenseMatrix implements Matrix
 					row_count++;
 					line = counter.nextLine();
 				}
-				this.row_count = row_count;
-				this.col_count = line.split(" ").length;
+				this.row_count = Math.max(row_count, 0);
+				this.col_count = Math.max(line.split(" ").length, 0);
 			}
 
-			this.data = new double[this.row_count][this.col_count];
+			if (this.row_count == 0 | this.col_count == 0) {
+				this.data = new double[0][0];
+			}
+			else {
+				this.data = new double[this.row_count][this.col_count];
 
-			for (int i = 0; i < this.row_count; i++) {
-				String[] numbers = scanner.nextLine().split(" ");
-				for (int j = 0; j < this.col_count; j++) {
-					this.data[i][j] = Double.parseDouble(numbers[j]);
+				for (int i = 0; i < this.row_count; i++) {
+					String[] numbers = scanner.nextLine().split(" ");
+					for (int j = 0; j < this.col_count; j++) {
+						this.data[i][j] = Double.parseDouble(numbers[j]);
+					}
 				}
 			}
 
+			this.hashCode = this.hashCode();
 		} catch (IOException e) {
 			throw new RuntimeException("Cannot open file", e);
 		}
 	}
 
 	public DenseMatrix(int row_count, int col_count, double[][] data) {
-		if (row_count == data.length & col_count == data[0].length) {
+		if (row_count <= 0 | col_count <= 0) {
+			this.row_count = 0;
+			this.col_count = 0;
+			this.data = new double[0][0];
+			this.hashCode = this.hashCode();
+		}
+		else if (row_count == data.length & col_count == data[0].length) {
 			this.row_count = row_count;
 			this.col_count = col_count;
 			this.data = data;
+			this.hashCode = this.hashCode();
 		}
 		else {
 			throw new RuntimeException("Size arguments didn't match data array size");
@@ -83,6 +96,10 @@ public class DenseMatrix implements Matrix
 
 			DenseMatrix b = (DenseMatrix) o;
 			if (this.col_count == b.row_count) {
+
+				if (this.row_count == 0 | b.col_count == 0) {
+					return new DenseMatrix(0, 0, new double[0][0]);
+				}
 
 				double[][] result = new double[this.row_count][b.col_count];
 				for (int i = 0; i < this.row_count; i++) {
@@ -115,16 +132,41 @@ public class DenseMatrix implements Matrix
 		return null;
 	}
 
+	public Matrix transpose() {
+		if (this.row_count == 0 | this.col_count == 0) {
+			return this;
+		}
+		else {
+			double[][] result = new double[this.col_count][this.row_count];
+			for (int i = 0; i < this.row_count; i++) {
+				for (int j = 0; j < this.col_count; j++) {
+					result[j][i] = this.getElement(j, i);
+				}
+			}
+			return new DenseMatrix(this.col_count, this.row_count, result);
+		}
+	}
+
 	public int hashCode() {
-		if (this.hashCode == 0) {
+
+		String caller = String.valueOf( (new Throwable().getStackTrace())[1] );
+		if (caller.equals("DenseMatrix")) {
+
+			if (this.row_count == 0 | this.col_count == 0) {
+				return 0;
+			}
+
 			int a = 0, b = 0;
 			for (int i = 0; i < Math.min(this.col_count, this.row_count); i++) {
 				a += this.getElement(i, i);
 				b += this.getElement(this.col_count - i - 1, i);
 			}
-			this.hashCode = a ^ b;
+
+			return a ^ b;
 		}
-		return this.hashCode;
+		else {
+			return this.hashCode;
+		}
 	}
 
 	/**
@@ -142,6 +184,11 @@ public class DenseMatrix implements Matrix
 				return false;
 			}
 			if (this.hashCode() == o.hashCode()) {
+
+				if (this.col_count == 0 | this.row_count == 0) {
+					return true;
+				}
+
 				for (int i = 0; i < this.col_count; i++) {
 					for (int j = 0; j < this.row_count; j++) {
 						if (Math.abs(((DenseMatrix) o).getElement(i, j)) - Math.abs(this.getElement(i, j)) > 0.0001 |

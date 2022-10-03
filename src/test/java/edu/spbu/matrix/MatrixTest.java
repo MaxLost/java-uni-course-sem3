@@ -22,15 +22,29 @@ public class MatrixTest
 	}
 
 	@Test
-	public void mulIdentityMatrix() {
-		DenseMatrix m = new DenseMatrix("load_test.txt");
-		double[][] e_data = new double[m.row_count][m.row_count];
-		for(int i = 0; i < m.row_count; i++) {
-			e_data[i][i] = 1;
-		}
-		DenseMatrix e = new DenseMatrix(m.row_count, m.row_count, e_data);
-		DenseMatrix result = (DenseMatrix) m.mul(e);
-		assertEquals(m, result);
+	public void transposeTest() {
+		DenseMatrix m1 = new DenseMatrix("2x4_test.txt");
+		Matrix result = m1.transpose();
+		DenseMatrix expected = new DenseMatrix("2x4_transposed_test.txt");
+		assertEquals(result, expected);
+	}
+
+	@Test
+	public void mulZeroSizedMatrices() {
+		DenseMatrix m1 = new DenseMatrix(0, 0, new double[0][0]);
+		DenseMatrix m2 = new DenseMatrix(0, 0, new double[0][0]);
+		Matrix result = m1.mul(m2);
+		DenseMatrix expected = new DenseMatrix(0, 0, new double[0][0]);
+		assertEquals(result, expected);
+	}
+
+	@Test
+	public void mulVector() {
+		DenseMatrix m1 = new DenseMatrix("2x4_test.txt");
+		DenseMatrix v = new DenseMatrix("vector_test.txt");
+		Matrix result = m1.mul(v);
+		DenseMatrix expected = new DenseMatrix("m@v_test.txt");
+		assertEquals(result, expected);
 	}
 
 	@Test
@@ -53,7 +67,7 @@ public class MatrixTest
 		Matrix m1 = new DenseMatrix("dense_mul_test_m1.txt");
 		Matrix m2 = new DenseMatrix("dense_mul_test_m2.txt");
 		Matrix result = m1.mul(m2);
-		Matrix expected = new DenseMatrix("dense_mul_test_m1xm2.txt");
+		Matrix expected = new DenseMatrix("dense_mul_test_m1@m2.txt");
 		assertEquals(result, expected);
 	}
 
@@ -62,7 +76,7 @@ public class MatrixTest
 		Matrix m1 = new DenseMatrix("dense_mul_test_m1.txt");
 		Matrix m2 = new DenseMatrix("dense_mul_test_m2.txt");
 		Matrix result = m2.mul(m1);
-		Matrix expected = new DenseMatrix("dense_mul_test_m2xm1.txt");
+		Matrix expected = new DenseMatrix("dense_mul_test_m2@m1.txt");
 		assertEquals(result, expected);
 	}
 
