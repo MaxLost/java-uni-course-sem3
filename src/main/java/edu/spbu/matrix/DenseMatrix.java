@@ -30,8 +30,14 @@ public class DenseMatrix implements Matrix
 					row_count++;
 					line = counter.nextLine();
 				}
-				this.row_count = Math.max(row_count, 0);
-				this.col_count = Math.max(line.split(" ").length, 0);
+				if (row_count == 0 | line.split(" ").length == 0) {
+					this.row_count = 0;
+					this.col_count = 0;
+				}
+				else {
+					this.row_count = row_count;
+					this.col_count = line.split(" ").length;
+				}
 			}
 
 			if (this.row_count == 0 | this.col_count == 0) {

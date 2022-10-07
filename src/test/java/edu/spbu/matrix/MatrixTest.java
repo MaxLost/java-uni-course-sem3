@@ -13,12 +13,25 @@ public class MatrixTest
 	@Test
 	public void loadDenseMatrixTest() {
 		DenseMatrix m = new DenseMatrix("load_test.txt");
-		double[][] expected = { {1.0, 2.0, 0}, {3.0, 4.0, 1.0}, {10.0, 8.0, 0} };
-		for (int i = 0; i < 3; i++) {
-			for (int j = 0; j < 3; j++){
-				assertEquals(expected[j][i], m.getElement(i, j), 0);
-			}
-		}
+		double[][] expected_data = { {1.0, 2.0, 0}, {3.0, 4.0, 1.0}, {10.0, 8.0, 0} };
+		DenseMatrix expected = new DenseMatrix(3, 3, expected_data);
+		assertEquals(m, expected);
+	}
+
+	@Test
+	public void loadEmptyMatrix() {
+		DenseMatrix m = new DenseMatrix("empty.txt");
+		System.out.println(m);
+		DenseMatrix expected = new DenseMatrix(0, 0, new double[0][0]);
+		assertEquals(m, expected);
+	}
+
+	@Test
+	public void denseEqualsTest() {
+		double[][] data = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} };
+		DenseMatrix m1 = new DenseMatrix(3, 3, data);
+		DenseMatrix m2 = new DenseMatrix(3, 3, data);
+		assertEquals(m1, m2);
 	}
 
 	@Test
