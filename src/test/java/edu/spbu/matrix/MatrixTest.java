@@ -30,7 +30,7 @@ public class MatrixTest
 	}
 
 	@Test
-	public void mulZeroSizedMatrices() {
+	public void mulZeroSizedMatrix() {
 		DenseMatrix m1 = new DenseMatrix(0, 0, new double[0][0]);
 		DenseMatrix m2 = new DenseMatrix(0, 0, new double[0][0]);
 		Matrix result = m1.mul(m2);
@@ -63,7 +63,7 @@ public class MatrixTest
 	}
 
 	@Test
-	public void mullDD1() {
+	public void mulDD1() {
 		Matrix m1 = new DenseMatrix("dense_mul_test_m1.txt");
 		Matrix m2 = new DenseMatrix("dense_mul_test_m2.txt");
 		Matrix result = m1.mul(m2);
@@ -72,11 +72,20 @@ public class MatrixTest
 	}
 
 	@Test
-	public void mullDD2() {
+	public void mulDD2() {
 		Matrix m1 = new DenseMatrix("dense_mul_test_m1.txt");
 		Matrix m2 = new DenseMatrix("dense_mul_test_m2.txt");
 		Matrix result = m2.mul(m1);
 		Matrix expected = new DenseMatrix("dense_mul_test_m2@m1.txt");
+		assertEquals(result, expected);
+	}
+
+	@Test
+	public void mulDD3() {
+		Matrix m1 = new DenseMatrix("3x3_test.txt");
+		Matrix m2 = new DenseMatrix("3x3_test.txt");
+		Matrix result = m2.mul(m1);
+		Matrix expected = new DenseMatrix("3x3_expected_test.txt");
 		assertEquals(result, expected);
 	}
 
