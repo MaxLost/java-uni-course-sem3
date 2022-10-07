@@ -10,6 +10,9 @@ import java.util.Scanner;
  */
 public class DenseMatrix implements Matrix
 {
+
+	public static final double EPSILON = 10e-6;
+
 	private final double[][] data;
 	public final int row_count;
 	public final int col_count;
@@ -197,8 +200,8 @@ public class DenseMatrix implements Matrix
 
 				for (int i = 0; i < this.col_count; i++) {
 					for (int j = 0; j < this.row_count; j++) {
-						if (Math.abs(((DenseMatrix) o).getElement(i, j)) - Math.abs(this.getElement(i, j)) > 0.0001 |
-								Math.abs(((DenseMatrix) o).getElement(i, j)) - Math.abs(this.getElement(i, j)) < -0.0001) {
+						if (Math.abs(Math.abs(((DenseMatrix) o).getElement(i, j))
+								- Math.abs(this.getElement(i, j))) > EPSILON) {
 							return false;
 						}
 					}
