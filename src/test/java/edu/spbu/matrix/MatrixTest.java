@@ -21,7 +21,6 @@ public class MatrixTest
 	@Test
 	public void loadEmptyMatrix() {
 		DenseMatrix m = new DenseMatrix("empty.txt");
-		System.out.println(m);
 		DenseMatrix expected = new DenseMatrix(0, 0, new double[0][0]);
 		assertEquals(m, expected);
 	}

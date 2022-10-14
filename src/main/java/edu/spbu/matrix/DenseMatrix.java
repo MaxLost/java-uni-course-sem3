@@ -3,6 +3,7 @@ package edu.spbu.matrix;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 /**
@@ -23,41 +24,34 @@ public class DenseMatrix implements Matrix
 	 * @param fileName - name of file with matrix data
 	 */
 	public DenseMatrix(String fileName) {
-		Path file = Paths.get("src\\resources\\" + fileName);
+		Path file = Paths.get("src/resources/" + fileName);
 		try ( Scanner scanner = new Scanner(file) ) {
+			ArrayList <String> rows = new ArrayList<>();
 
-			int row_count = 0;
-			try ( Scanner counter = new Scanner(file) ) {
-				String line = "";
-				while (counter.hasNextLine()) {
-					row_count++;
-					line = counter.nextLine();
-				}
-				if (row_count == 0 | line.split(" ").length == 0) {
-					this.row_count = 0;
-					this.col_count = 0;
-				}
-				else {
-					this.row_count = row_count;
-					this.col_count = line.split(" ").length;
-				}
+			while(scanner.hasNextLine()) {
+				rows.add(scanner.nextLine());
 			}
 
-			if (this.row_count == 0 | this.col_count == 0) {
+			if (rows.size() == 0 || rows.get(0).split(" ").length == 0) {
+				this.row_count = 0;
+				this.col_count = 0;
 				this.data = new double[0][0];
 			}
 			else {
+				this.row_count = rows.size();
+				this.col_count = rows.get(0).split(" ").length;
 				this.data = new double[this.row_count][this.col_count];
 
 				for (int i = 0; i < this.row_count; i++) {
-					String[] numbers = scanner.nextLine().split(" ");
+					String[] line = rows.get(i).split(" ");
 					for (int j = 0; j < this.col_count; j++) {
-						this.data[i][j] = Double.parseDouble(numbers[j]);
+						this.data[i][j] = Double.parseDouble(line[j]);
 					}
 				}
 			}
 
 			this.hashCode = this.hashCode();
+
 		} catch (IOException e) {
 			throw new RuntimeException("Cannot open file", e);
 		}
