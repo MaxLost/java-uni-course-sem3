@@ -40,14 +40,17 @@ public class DenseMatrix implements Matrix
 			else {
 				this.row_count = rows.size();
 				this.col_count = rows.get(0).split(" ").length;
-				this.data = new double[this.row_count][this.col_count];
+				double[][] data = new double[this.row_count][this.col_count];
 
 				for (int i = 0; i < this.row_count; i++) {
 					String[] line = rows.get(i).split(" ");
 					for (int j = 0; j < this.col_count; j++) {
-						this.data[i][j] = Double.parseDouble(line[j]);
+						data[i][j] = Double.parseDouble(line[j]);
 					}
 				}
+
+				this.data = data;
+
 			}
 
 			this.hashCode = this.hashCode();
