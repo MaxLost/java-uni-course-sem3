@@ -6,6 +6,8 @@ package edu.spbu.matrix;
 public interface Matrix
 {
 
+  double EPSILON = 10e-6;
+
   double getElement(int x, int y);
 
   /**

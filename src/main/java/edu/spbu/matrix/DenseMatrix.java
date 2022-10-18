@@ -12,8 +12,6 @@ import java.util.Scanner;
 public class DenseMatrix implements Matrix
 {
 
-	public static final double EPSILON = 10e-6;
-
 	private final double[][] data;
 	public final int row_count;
 	public final int col_count;
@@ -153,7 +151,7 @@ public class DenseMatrix implements Matrix
 		}
 	}
 
-	public int hashCode() {
+	@Override public int hashCode() {
 
 		String caller = String.valueOf( (new Throwable().getStackTrace())[1] );
 		if (caller.equals("DenseMatrix")) {
@@ -161,7 +159,6 @@ public class DenseMatrix implements Matrix
 			if (this.row_count == 0 | this.col_count == 0) {
 				return 0;
 			}
-
 			int a = 0, b = 0;
 			for (int i = 0; i < Math.min(this.col_count, this.row_count); i++) {
 				a += this.getElement(i, i);
@@ -175,48 +172,75 @@ public class DenseMatrix implements Matrix
 		}
 	}
 
+	private boolean equalsDense(DenseMatrix other){
+
+		if (this.row_count != other.row_count | this.col_count != other.col_count) {
+			return false;
+		}
+
+		if (this.hashCode() == other.hashCode()) {
+
+			if (this.col_count == 0 | this.row_count == 0) {
+				return true;
+			}
+
+			for (int i = 0; i < this.col_count; i++) {
+				for (int j = 0; j < this.row_count; j++) {
+					if (Math.abs(Math.abs(other.getElement(i, j)) - Math.abs(this.getElement(i, j))) > EPSILON) {
+						return false;
+					}
+				}
+
+			}
+			return true;
+		}
+		return false;
+	}
+
+	private boolean equalsSparse(SparseMatrix other) {
+		if (this.row_count != other.row_count | this.col_count != other.col_count) {
+			return false;
+		}
+
+		if (this.col_count == 0 | this.row_count == 0) {
+			return true;
+		}
+
+		for (int i = 0; i < this.col_count; i++) {
+			for (int j = 0; j < this.row_count; j++) {
+				if (Math.abs(Math.abs(other.getElement(i, j)) - Math.abs(this.getElement(i, j))) > EPSILON) {
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
 	/**
 	 * спавнивает с обоими вариантами
 	 * @param o - Object with which DenseMatrix comparing
 	 * @return - true if objects equals, false if not
 	 */
-	public boolean equals(Object o) {
+	@Override public boolean equals(Object o) {
 
 		if (this == o) {
 			return true;
 		}
 		else if (o instanceof DenseMatrix) {
-			if (this.row_count != ((DenseMatrix) o).row_count | this.col_count != ((DenseMatrix) o).col_count) {
-				return false;
-			}
-			if (this.hashCode() == o.hashCode()) {
-
-				if (this.col_count == 0 | this.row_count == 0) {
-					return true;
-				}
-
-				for (int i = 0; i < this.col_count; i++) {
-					for (int j = 0; j < this.row_count; j++) {
-						if (Math.abs(Math.abs(((DenseMatrix) o).getElement(i, j))
-								- Math.abs(this.getElement(i, j))) > EPSILON) {
-							return false;
-						}
-					}
-
-				}
-				return true;
-			}
+			return equalsDense((DenseMatrix) o);
 		}
-
+		else if (o instanceof SparseMatrix) {
+			return equalsSparse((SparseMatrix) o);
+		}
 
 		return false;
 	}
 
-	public String toString() {
+	@Override public String toString() {
 		StringBuilder str = new StringBuilder();
 		for (int i = 0; i < this.row_count; i++) {
-			for (double x : this.data[i]) {
-				str.append(x).append(" ");
+			for (int j = 0; j < this.col_count; j++) {
+				str.append(this.getElement(j, i)).append(" ");
 			}
 			str.append("\n");
 		}
