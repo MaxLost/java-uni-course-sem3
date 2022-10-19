@@ -118,31 +118,61 @@ public class SparseMatrix implements Matrix
 		}
 		return this.hashCode;
 	}
+
+	private boolean equalsDense(DenseMatrix other) {
+
+		if (this.row_count != other.row_count | this.col_count != other.col_count) {
+			return false;
+		}
+
+		if (this.row_count == 0 | this.col_count == 0) { return true; }
+
+		for (int i = 0; i < this.row_count; i++){
+			for (int j = 0; j < this.col_count; j++) {
+				if (Math.abs(Math.abs(other.getElement(i, j)) - Math.abs(this.getElement(i, j))) > EPSILON) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	private boolean equalsSparse(SparseMatrix other) {
+
+		if (this.row_count != other.row_count | this.col_count != other.col_count) {
+			return false;
+		}
+
+		if (this.hashCode() == other.hashCode()) {
+
+			if (this.row_count == 0 | this.col_count == 0) { return true; }
+
+			for (int i = 0; i < this.row_count; i++){
+				for (int j = 0; j < this.col_count; j++) {
+					if (Math.abs(Math.abs(other.getElement(i, j)) - Math.abs(this.getElement(i, j))) > EPSILON) {
+						return false;
+					}
+				}
+			}
+
+			return true;
+		}
+		return false;
+	}
+
 	@Override public boolean equals(Object o) {
 
 		if (this == o) { return true; }
 
 		if (o instanceof SparseMatrix) {
-			SparseMatrix other = (SparseMatrix) o;
-			if (this.row_count != other.row_count | this.col_count != other.col_count) {
-				return false;
-			}
-
-			if (this.hashCode() == other.hashCode()) {
-
-				if (this.row_count == 0 | this.col_count == 0) { return true; }
-
-				for (int i = 0; i < this.row_count; i++){
-					for (int j = 0; j < this.col_count; j++) {
-						if (Math.abs(Math.abs(other.getElement(i, j)) - Math.abs(this.getElement(i, j))) > EPSILON) {
-							return false;
-						}
-					}
-				}
-
-				return true;
-			}
+			return equalsSparse((SparseMatrix) o);
 		}
+
+		if (o instanceof DenseMatrix) {
+			return equalsDense((DenseMatrix) o);
+		}
+
 		return false;
 	}
 
