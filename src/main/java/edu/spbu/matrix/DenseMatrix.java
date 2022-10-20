@@ -217,8 +217,8 @@ public class DenseMatrix implements Matrix
 	}
 
 	/**
-	 * спавнивает с обоими вариантами
-	 * @param o - Object with which DenseMatrix comparing
+	 * Compares various types of matrices
+	 * @param o - Object with which this matrix will be compared
 	 * @return - true if objects equals, false if not
 	 */
 	@Override public boolean equals(Object o) {

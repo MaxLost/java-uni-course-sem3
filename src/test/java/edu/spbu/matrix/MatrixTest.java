@@ -2,6 +2,8 @@ package edu.spbu.matrix;
 
 import org.junit.Test;
 
+import java.util.HashMap;
+
 import static org.junit.Assert.*;
 
 public class MatrixTest
@@ -11,7 +13,7 @@ public class MatrixTest
 	 */
 
 	@Test
-	public void loadDenseMatrixTest() {
+	public void loadDenseMatrix() {
 		DenseMatrix m = new DenseMatrix("dense_test/load_test.txt");
 		double[][] expected_data = { {1.0, 2.0, 0}, {3.0, 4.0, 1.0}, {10.0, 8.0, 0} };
 		DenseMatrix expected = new DenseMatrix(3, 3, expected_data);
@@ -19,14 +21,14 @@ public class MatrixTest
 	}
 
 	@Test
-	public void loadEmptyMatrix() {
+	public void loadEmptyDenseMatrix() {
 		DenseMatrix m = new DenseMatrix("dense_test/empty.txt");
 		DenseMatrix expected = new DenseMatrix(0, 0, new double[0][0]);
 		assertEquals(m, expected);
 	}
 
 	@Test
-	public void denseEqualsTest() {
+	public void equalsDDTest() {
 		double[][] data = { {1, 0, 0}, {0, 1, 0}, {0, 0, 1} };
 		DenseMatrix m1 = new DenseMatrix(3, 3, data);
 		DenseMatrix m2 = new DenseMatrix(3, 3, data);
@@ -99,6 +101,41 @@ public class MatrixTest
 		Matrix result = m2.mul(m1);
 		Matrix expected = new DenseMatrix("dense_test/3x3_expected.txt");
 		assertEquals(result, expected);
+	}
+
+	@Test
+	public void equalsSSTest(){
+		HashMap<Integer, HashMap<Integer, Double>> data = new HashMap<>();
+		data.put(0, new HashMap<Integer, Double>());
+		data.get(0).put(0, 2.0);
+		data.get(0).put(2, -1.0);
+		data.put(1, new HashMap<Integer, Double>());
+		data.get(1).put(1, 5.0);
+		Matrix m1 = new SparseMatrix(3, 3, data);
+		Matrix m2 = new SparseMatrix(3, 3, data);
+
+		assertEquals(m1, m2);
+	}
+
+	@Test
+	public void loadSparseMatrix(){
+		Matrix m = new SparseMatrix("sparse_test/load.txt");
+
+		HashMap<Integer, HashMap<Integer, Double>> data = new HashMap<>();
+		data.put(1, new HashMap<Integer, Double>());
+		data.get(1).put(1, 5.0);
+		data.put(2, new HashMap<Integer, Double>());
+		data.get(2).put(2, -3.0);
+		Matrix expected = new SparseMatrix(3, 3, data);
+
+		assertEquals(m, expected);
+	}
+
+	@Test
+	public void loadEmptySparceMatrix() {
+		Matrix m = new SparseMatrix("dense_test/empty.txt");
+		Matrix expected = new SparseMatrix(0, 0, new HashMap<>());
+		assertEquals(m, expected);
 	}
 
 	/*

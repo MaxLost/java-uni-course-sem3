@@ -44,7 +44,7 @@ public class SparseMatrix implements Matrix
 			for (int i = 0; i < this.row_count; i++){
 				String[] numbers = rows.get(i).split(" ");
 				for (int j = 0; j < this.col_count; j++){
-					data.computeIfAbsent(i, key -> new HashMap<Integer, Double>());
+					data.computeIfAbsent(i, t -> new HashMap<Integer, Double>());
 					double value = Double.parseDouble(numbers[j]);
 					if (Math.abs(value) > EPSILON) {
 						data.get(i).put(j, value);
@@ -60,11 +60,20 @@ public class SparseMatrix implements Matrix
 		}
 	}
 
+	public SparseMatrix (int row_count, int col_count, HashMap<Integer, HashMap<Integer, Double>> data){
+		this.data = data;
+		this.row_count = row_count;
+		this.col_count = col_count;
+		this.hashCode = hashCode();
+	}
+
 	@Override public double getElement(int x, int y) {
-		if (x >= this.col_count | y <= this.row_count){
+		if (x >= this.col_count | y >= this.row_count){
 			throw new RuntimeException("Invalid coordinates");
 		} else {
-			Double value = this.data.get(y).get(x);
+			HashMap<Integer, Double> row = this.data.get(y);
+			if (row == null) { return 0; }
+			Double value = row.get(x);
 			return  value == null ? 0 : value;
 		}
 	}
@@ -73,19 +82,53 @@ public class SparseMatrix implements Matrix
 	 * однопоточное умнджение матриц
 	 * должно поддерживаться для всех 4-х вариантов
 	 *
-	 * @param o
-	 * @return
+	 * @param o -
+	 * @return -
 	 */
-	@Override public Matrix mul(Matrix o)
-	{
+	@Override public Matrix mul(Matrix o) {
+		if (o instanceof SparseMatrix) {
+			return mulSparce((SparseMatrix) o);
+		}
+		else if (o instanceof DenseMatrix){
+			return mulDense((DenseMatrix) o);
+		}
+
+		return null;
+	}
+
+	private DenseMatrix mulDense(DenseMatrix m){
+		return null;
+	}
+
+	private SparseMatrix mulSparce(SparseMatrix m){
+
+		if (this.col_count == m.row_count){
+			if (this.row_count == 0 | m.col_count == 0) {
+				return new SparseMatrix(0, 0, new HashMap<>());
+			}
+
+			HashMap<Integer, HashMap<Integer, Double>> data = new HashMap<>();
+			for (int i = 0; i < this.row_count; i++){
+				for (int j = 0; j < this.col_count; j++) {
+					for (int k = 0; k < this.col_count; k++){
+						data.computeIfAbsent(i, t -> new HashMap<Integer, Double>());
+					}
+				}
+			}
+
+		}
+		else {
+			throw new RuntimeException("Unable to multiply matrices due to their sizes");
+		}
+
 		return null;
 	}
 
 	/**
 	 * многопоточное умножение матриц
 	 *
-	 * @param o
-	 * @return
+	 * @param o -
+	 * @return -
 	 */
 	@Override public Matrix dmul(Matrix o)
 	{
@@ -150,7 +193,7 @@ public class SparseMatrix implements Matrix
 
 			for (int i = 0; i < this.row_count; i++){
 				for (int j = 0; j < this.col_count; j++) {
-					if (Math.abs(Math.abs(other.getElement(i, j)) - Math.abs(this.getElement(i, j))) > EPSILON) {
+					if (Math.abs(Math.abs(other.getElement(j, i)) - Math.abs(this.getElement(j, i))) > EPSILON) {
 						return false;
 					}
 				}
