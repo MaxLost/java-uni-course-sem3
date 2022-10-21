@@ -12,6 +12,7 @@ import java.util.Scanner;
  */
 public class SparseMatrix implements Matrix
 {
+
 	private final HashMap<Integer, HashMap<Integer, Double>> data;
 	public final int row_count;
 	public final int col_count;
@@ -33,26 +34,28 @@ public class SparseMatrix implements Matrix
 			if (rows.size() == 0 || rows.get(0).split(" ").length == 0){
 				this.row_count = 0;
 				this.col_count = 0;
+				this.data = null;
 			}
 			else {
 				this.row_count = rows.size();
 				this.col_count = rows.get(0).split(" ").length;
-			}
 
-			HashMap<Integer, HashMap<Integer, Double>> data = new HashMap<>();
 
-			for (int i = 0; i < this.row_count; i++){
-				String[] numbers = rows.get(i).split(" ");
-				for (int j = 0; j < this.col_count; j++){
-					data.computeIfAbsent(i, t -> new HashMap<Integer, Double>());
-					double value = Double.parseDouble(numbers[j]);
-					if (Math.abs(value) > EPSILON) {
-						data.get(i).put(j, value);
+				HashMap<Integer, HashMap<Integer, Double>> data = new HashMap<>();
+
+				for (int i = 0; i < this.row_count; i++) {
+					String[] numbers = rows.get(i).split(" ");
+					for (int j = 0; j < this.col_count; j++) {
+						data.computeIfAbsent(i, t -> new HashMap<Integer, Double>());
+						double value = Double.parseDouble(numbers[j]);
+						if (Math.abs(value) > EPSILON) {
+							data.get(i).put(j, value);
+						}
 					}
 				}
-			}
 
-			this.data = data;
+				this.data = data;
+			}
 			this.hashCode = this.hashCode();
 
 		} catch (IOException e) {
@@ -87,7 +90,7 @@ public class SparseMatrix implements Matrix
 	 */
 	@Override public Matrix mul(Matrix o) {
 		if (o instanceof SparseMatrix) {
-			return mulSparce((SparseMatrix) o);
+			return mulSparse((SparseMatrix) o);
 		}
 		else if (o instanceof DenseMatrix){
 			return mulDense((DenseMatrix) o);
@@ -96,32 +99,65 @@ public class SparseMatrix implements Matrix
 		return null;
 	}
 
-	private DenseMatrix mulDense(DenseMatrix m){
-		return null;
-	}
-
-	private SparseMatrix mulSparce(SparseMatrix m){
+	private Matrix mulDense(DenseMatrix m){
 
 		if (this.col_count == m.row_count){
 			if (this.row_count == 0 | m.col_count == 0) {
-				return new SparseMatrix(0, 0, new HashMap<>());
+				return new SparseMatrix(0, 0, null);
 			}
 
 			HashMap<Integer, HashMap<Integer, Double>> data = new HashMap<>();
 			for (int i = 0; i < this.row_count; i++){
-				for (int j = 0; j < this.col_count; j++) {
+				for (int j = 0; j < m.col_count; j++) {
+					double sum = 0;
 					for (int k = 0; k < this.col_count; k++){
+						if (this.getElement(k, i) != 0){
+							sum += this.getElement(k, i) * m.getElement(j, k);
+						}
+					}
+					if (sum != 0) {
 						data.computeIfAbsent(i, t -> new HashMap<Integer, Double>());
+						data.get(i).put(j, sum);
 					}
 				}
 			}
 
+			return new SparseMatrix(this.row_count, m.col_count, data);
+
+		} else {
+			throw new RuntimeException("Unable to multiply matrices due to wrong sizes");
+		}
+	}
+
+	private Matrix mulSparse(SparseMatrix m){
+
+		if (this.col_count == m.row_count){
+			if (this.row_count == 0 | m.col_count == 0) {
+				return new SparseMatrix(0, 0, null);
+			}
+
+			HashMap<Integer, HashMap<Integer, Double>> data = new HashMap<>();
+			for (int i = 0; i < this.row_count; i++){
+				for (int j = 0; j < m.col_count; j++) {
+					double sum = 0;
+					for (int k = 0; k < this.col_count; k++){
+						if (this.getElement(k, i) != 0 & m.getElement(j, k) != 0){
+							sum += this.getElement(k, i) * m.getElement(j, k);
+						}
+
+					}
+					if (sum != 0) {
+						data.computeIfAbsent(i, t -> new HashMap<Integer, Double>());
+						data.get(i).put(j, sum);
+					}
+				}
+			}
+			return new SparseMatrix(this.row_count, m.col_count, data);
+
 		}
 		else {
-			throw new RuntimeException("Unable to multiply matrices due to their sizes");
+			throw new RuntimeException("Unable to multiply matrices due to wrong sizes");
 		}
-
-		return null;
 	}
 
 	/**
@@ -130,8 +166,7 @@ public class SparseMatrix implements Matrix
 	 * @param o -
 	 * @return -
 	 */
-	@Override public Matrix dmul(Matrix o)
-	{
+	@Override public Matrix dmul(Matrix o) {
 		return null;
 	}
 
@@ -162,48 +197,6 @@ public class SparseMatrix implements Matrix
 		return this.hashCode;
 	}
 
-	private boolean equalsDense(DenseMatrix other) {
-
-		if (this.row_count != other.row_count | this.col_count != other.col_count) {
-			return false;
-		}
-
-		if (this.row_count == 0 | this.col_count == 0) { return true; }
-
-		for (int i = 0; i < this.row_count; i++){
-			for (int j = 0; j < this.col_count; j++) {
-				if (Math.abs(Math.abs(other.getElement(i, j)) - Math.abs(this.getElement(i, j))) > EPSILON) {
-					return false;
-				}
-			}
-		}
-
-		return true;
-	}
-
-	private boolean equalsSparse(SparseMatrix other) {
-
-		if (this.row_count != other.row_count | this.col_count != other.col_count) {
-			return false;
-		}
-
-		if (this.hashCode() == other.hashCode()) {
-
-			if (this.row_count == 0 | this.col_count == 0) { return true; }
-
-			for (int i = 0; i < this.row_count; i++){
-				for (int j = 0; j < this.col_count; j++) {
-					if (Math.abs(Math.abs(other.getElement(j, i)) - Math.abs(this.getElement(j, i))) > EPSILON) {
-						return false;
-					}
-				}
-			}
-
-			return true;
-		}
-		return false;
-	}
-
 	@Override public boolean equals(Object o) {
 
 		if (this == o) { return true; }
@@ -219,7 +212,50 @@ public class SparseMatrix implements Matrix
 		return false;
 	}
 
+	private boolean equalsDense(DenseMatrix o) {
+
+		if (this.row_count != o.row_count | this.col_count != o.col_count) {
+			return false;
+		}
+
+		if (this.row_count == 0 | this.col_count == 0) { return true; }
+
+		for (int i = 0; i < this.row_count; i++){
+			for (int j = 0; j < this.col_count; j++) {
+				if (Math.abs(Math.abs(o.getElement(j, i)) - Math.abs(this.getElement(j, i))) > EPSILON) {
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	private boolean equalsSparse(SparseMatrix o) {
+
+		if (this.row_count != o.row_count | this.col_count != o.col_count) {
+			return false;
+		}
+
+		if (this.hashCode() == o.hashCode()) {
+
+			if (this.row_count == 0 | this.col_count == 0) { return true; }
+
+			for (int i = 0; i < this.row_count; i++){
+				for (int j = 0; j < this.col_count; j++) {
+					if (Math.abs(Math.abs(o.getElement(j, i)) - Math.abs(this.getElement(j, i))) > EPSILON) {
+						return false;
+					}
+				}
+			}
+
+			return true;
+		}
+		return false;
+	}
+
 	@Override public String toString() {
+
 		StringBuilder str = new StringBuilder();
 		for (int i = 0; i < this.row_count; i++) {
 			for (int j = 0; j < this.col_count; j++) {

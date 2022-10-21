@@ -53,7 +53,7 @@ public class MatrixTest
 	}
 
 	@Test
-	public void mulVector() {
+	public void mulDV() {
 		DenseMatrix m1 = new DenseMatrix("dense_test/2x4.txt");
 		DenseMatrix v = new DenseMatrix("dense_test/vector.txt");
 		Matrix result = m1.mul(v);
@@ -62,14 +62,59 @@ public class MatrixTest
 	}
 
 	@Test
-	public void mulSizeTest() {
-		DenseMatrix m1 = new DenseMatrix("dense_test/2x4.txt");
-		DenseMatrix m2 = new DenseMatrix("dense_test/4x3.txt");
+	public void mulDDSizeTest() {
+		DenseMatrix m1 = new DenseMatrix("dense_test/4x3.txt");
+		DenseMatrix m2 = new DenseMatrix("dense_test/2x4.txt");
 		boolean catched = false;
 		try {
-			m2.mul(m1);
+			m1.mul(m2);
 		} catch (RuntimeException e) {
-			if (e.getMessage().equals("Unable to multiply matrices due to their sizes")) {
+			if (e.getMessage().equals("Unable to multiply matrices due to wrong sizes")) {
+				catched = true;
+			}
+		}
+		if (!catched) { fail("Multiplication with wrong sizes happened"); }
+	}
+
+	@Test
+	public void mulSSSizeTest() {
+		Matrix m1 = new SparseMatrix("sparse_test/5x3.txt");
+		Matrix m2 = new SparseMatrix("sparse_test/4x5.txt");
+		boolean catched = false;
+		try {
+			m1.mul(m2);
+		} catch (RuntimeException e) {
+			if (e.getMessage().equals("Unable to multiply matrices due to wrong sizes")) {
+				catched = true;
+			}
+		}
+		if (!catched) { fail("Multiplication with wrong sizes happened"); }
+	}
+
+	@Test
+	public void mulSDSizeTest() {
+		Matrix m1 = new SparseMatrix("sparse_test/5x3.txt");
+		Matrix m2 = new DenseMatrix("dense_test/2x4.txt");
+		boolean catched = false;
+		try {
+			m1.mul(m2);
+		} catch (RuntimeException e) {
+			if (e.getMessage().equals("Unable to multiply matrices due to wrong sizes")) {
+				catched = true;
+			}
+		}
+		if (!catched) { fail("Multiplication with wrong sizes happened"); }
+	}
+
+	@Test
+	public void mulDSSizeTest() {
+		Matrix m1 = new DenseMatrix("dense_test/2x4.txt");
+		Matrix m2 = new SparseMatrix("sparse_test/5x3.txt");
+		boolean catched = false;
+		try {
+			m1.mul(m2);
+		} catch (RuntimeException e) {
+			if (e.getMessage().equals("Unable to multiply matrices due to wrong sizes")) {
 				catched = true;
 			}
 		}
@@ -132,10 +177,46 @@ public class MatrixTest
 	}
 
 	@Test
-	public void loadEmptySparceMatrix() {
+	public void loadEmptySparseMatrix() {
 		Matrix m = new SparseMatrix("dense_test/empty.txt");
-		Matrix expected = new SparseMatrix(0, 0, new HashMap<>());
+		Matrix expected = new SparseMatrix(0, 0, null);
 		assertEquals(m, expected);
+	}
+
+	@Test
+	public void mulSS1() {
+		Matrix m1 = new SparseMatrix("sparse_test/4x5.txt");
+		Matrix m2 = new SparseMatrix("sparse_test/5x3.txt");
+		Matrix result = m1.mul(m2);
+		Matrix expected = new SparseMatrix("sparse_test/4x5@5x3.txt");
+		assertEquals(result, expected);
+	}
+
+	@Test
+	public void mulSV() {
+		Matrix m = new SparseMatrix("sparse_test/4x5.txt");
+		Matrix v = new DenseMatrix("sparse_test/vector.txt");
+		Matrix result = m.mul(v);
+		Matrix expected = new DenseMatrix("sparse_test/4x5@v.txt");
+		assertEquals(result, expected);
+	}
+
+	@Test
+	public void mulDS1() {
+		Matrix m1 = new DenseMatrix("dense_test/2x4.txt");
+		Matrix m2 = new SparseMatrix("sparse_test/4x5.txt");
+		Matrix result = m1.mul(m2);
+		Matrix expected = new SparseMatrix("sparse_test/2x4@4x5.txt");
+		assertEquals(result, expected);
+	}
+
+	@Test
+	public void mulSD1() {
+		Matrix m1 = new SparseMatrix("sparse_test/5x3.txt");
+		Matrix m2 = new DenseMatrix("dense_test/3x3.txt");
+		Matrix result = m1.mul(m2);
+		Matrix expected = new SparseMatrix("sparse_test/5x3@3x3.txt");
+		assertEquals(result, expected);
 	}
 
 	/*

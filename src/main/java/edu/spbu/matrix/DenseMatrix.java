@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 /**
@@ -15,8 +16,8 @@ public class DenseMatrix implements Matrix
 	private final double[][] data;
 	public final int row_count;
 	public final int col_count;
-
 	private final int hashCode;
+
 	/**
 	 * Loads dense matrix from file
 	 * @param fileName - name of file with matrix data
@@ -94,33 +95,68 @@ public class DenseMatrix implements Matrix
 	 * @param o - B matrix in (1)
 	 * @return - result of matrix multiplication, C matrix in (1)
 	 */
-	@Override public Matrix mul(Matrix o) {
+	@Override public Matrix mul(Matrix o){
 
 		if (o instanceof DenseMatrix) {
-
-			DenseMatrix b = (DenseMatrix) o;
-			if (this.col_count == b.row_count) {
-
-				if (this.row_count == 0 | b.col_count == 0) {
-					return new DenseMatrix(0, 0, new double[0][0]);
-				}
-
-				double[][] result = new double[this.row_count][b.col_count];
-				for (int i = 0; i < this.row_count; i++) {
-					for (int j = 0; j < b.col_count; j++) {
-						for (int k = 0; k < this.col_count; k++) {
-							result[i][j] += this.getElement(k, i) * b.getElement(j, k);
-						}
-					}
-				}
-				return new DenseMatrix(this.row_count, b.col_count, result);
-			}
-			else {
-				throw new RuntimeException("Unable to multiply matrices due to their sizes");
-			}
+			return mulDense((DenseMatrix) o);
+		}
+		else if (o instanceof SparseMatrix) {
+			return mulSparse((SparseMatrix) o);
 		}
 
 		return null;
+	}
+
+	private Matrix mulDense(DenseMatrix m){
+
+		if (this.col_count == m.row_count) {
+
+			if (this.row_count == 0 | m.col_count == 0) {
+				return new DenseMatrix(0, 0, new double[0][0]);
+			}
+
+			double[][] result = new double[this.row_count][m.col_count];
+			for (int i = 0; i < this.row_count; i++) {
+				for (int j = 0; j < m.col_count; j++) {
+					for (int k = 0; k < this.col_count; k++) {
+						result[i][j] += this.getElement(k, i) * m.getElement(j, k);
+					}
+				}
+			}
+			return new DenseMatrix(this.row_count, m.col_count, result);
+		}
+		else {
+			throw new RuntimeException("Unable to multiply matrices due to wrong sizes");
+		}
+	}
+
+	private Matrix mulSparse(SparseMatrix m) {
+		if (this.col_count == m.row_count){
+			if (this.row_count == 0 | m.col_count == 0) {
+				return new SparseMatrix(0, 0, null);
+			}
+
+			HashMap<Integer, HashMap<Integer, Double>> data = new HashMap<>();
+			for (int i = 0; i < this.row_count; i++){
+				for (int j = 0; j < m.col_count; j++) {
+					double sum = 0;
+					for (int k = 0; k < this.col_count; k++){
+						if (m.getElement(j, k) != 0){
+							sum += this.getElement(k, i) * m.getElement(j, k);
+						}
+					}
+					if (sum != 0) {
+						data.computeIfAbsent(i, t -> new HashMap<Integer, Double>());
+						data.get(i).put(j, sum);
+					}
+				}
+			}
+
+			return new SparseMatrix(this.row_count, m.col_count, data);
+
+		} else {
+			throw new RuntimeException("Unable to multiply matrices due to wrong sizes");
+		}
 	}
 
 	/**
@@ -172,6 +208,26 @@ public class DenseMatrix implements Matrix
 		}
 	}
 
+	/**
+	 * Compares various types of matrices
+	 * @param o - Object with which this matrix will be compared
+	 * @return - true if objects equals, false if not
+	 */
+	@Override public boolean equals(Object o) {
+
+		if (this == o) {
+			return true;
+		}
+		else if (o instanceof DenseMatrix) {
+			return equalsDense((DenseMatrix) o);
+		}
+		else if (o instanceof SparseMatrix) {
+			return equalsSparse((SparseMatrix) o);
+		}
+
+		return false;
+	}
+
 	private boolean equalsDense(DenseMatrix other){
 
 		if (this.row_count != other.row_count | this.col_count != other.col_count) {
@@ -214,26 +270,6 @@ public class DenseMatrix implements Matrix
 			}
 		}
 		return true;
-	}
-
-	/**
-	 * Compares various types of matrices
-	 * @param o - Object with which this matrix will be compared
-	 * @return - true if objects equals, false if not
-	 */
-	@Override public boolean equals(Object o) {
-
-		if (this == o) {
-			return true;
-		}
-		else if (o instanceof DenseMatrix) {
-			return equalsDense((DenseMatrix) o);
-		}
-		else if (o instanceof SparseMatrix) {
-			return equalsSparse((SparseMatrix) o);
-		}
-
-		return false;
 	}
 
 	@Override public String toString() {
