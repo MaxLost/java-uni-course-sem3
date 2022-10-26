@@ -7,9 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
-/**
- * Разряженная матрица
- */
+
 public class SparseMatrix implements Matrix
 {
 

@@ -7,9 +7,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 
-/**
- * Плотная матрица
- */
+
 public class DenseMatrix implements Matrix
 {
 
