@@ -8,10 +8,6 @@ import static org.junit.Assert.*;
 
 public class MatrixTest
 {
-	/**
-	 * ожидается 4 таких теста
-	 */
-
 	@Test
 	public void loadDenseMatrix() {
 		DenseMatrix m = new DenseMatrix("dense_test/load_test.txt");

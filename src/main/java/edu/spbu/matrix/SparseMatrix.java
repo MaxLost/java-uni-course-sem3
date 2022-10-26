@@ -82,11 +82,12 @@ public class SparseMatrix implements Matrix
 	}
 
 	/**
-	 * однопоточное умнджение матриц
-	 * должно поддерживаться для всех 4-х вариантов
+	 * Single-thread matrix multiplication
+	 * <p>
+	 * (1) A@B = C
 	 *
-	 * @param o -
-	 * @return -
+	 * @param o - B matrix in (1)
+	 * @return - result of matrix multiplication, C matrix in (1)
 	 */
 	@Override public Matrix mul(Matrix o) {
 		if (o instanceof SparseMatrix) {
@@ -161,10 +162,12 @@ public class SparseMatrix implements Matrix
 	}
 
 	/**
-	 * многопоточное умножение матриц
+	 * Multi-thread matrix multiplication
+	 * <p>
+	 * (1) A@B = C
 	 *
-	 * @param o -
-	 * @return -
+	 * @param o - B matrix in (1)
+	 * @return - result of matrix multiplication, C matrix in (1)
 	 */
 	@Override public Matrix dmul(Matrix o) {
 		return null;

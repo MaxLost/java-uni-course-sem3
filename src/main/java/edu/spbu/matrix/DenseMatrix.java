@@ -88,7 +88,6 @@ public class DenseMatrix implements Matrix
 
 	/**
 	 * Single-thread matrix multiplication
-	 * должно поддерживаться для всех 4-х вариантов
 	 * <p>
 	 * (1) A@B = C
 	 *
