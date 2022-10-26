@@ -32,10 +32,18 @@ public class MatrixTest
 	}
 
 	@Test
-	public void transposeTest() {
+	public void transposeDenseTest() {
 		DenseMatrix m1 = new DenseMatrix("dense_test/2x4.txt");
 		Matrix result = m1.transpose();
 		DenseMatrix expected = new DenseMatrix("dense_test/2x4_transposed.txt");
+		assertEquals(result, expected);
+	}
+
+	@Test
+	public void transposeSparseTest() {
+		SparseMatrix m1 = new SparseMatrix("sparse_test/5x3.txt");
+		Matrix result = m1.transpose();
+		SparseMatrix expected = new SparseMatrix("sparse_test/5x3_transposed.txt");
 		assertEquals(result, expected);
 	}
 

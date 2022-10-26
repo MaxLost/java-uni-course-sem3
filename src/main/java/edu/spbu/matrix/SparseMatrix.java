@@ -173,6 +173,24 @@ public class SparseMatrix implements Matrix
 		return null;
 	}
 
+	public Matrix transpose() {
+		if (this.row_count == 0 | this.col_count == 0) {
+			return this;
+		}
+		else {
+			HashMap<Integer, HashMap<Integer, Double>> data = new HashMap<>();
+			for (int i = 0; i < this.row_count; i++){
+				for (int j = 0; j < this.col_count; j++){
+					if (this.getElement(j, i) != 0) {
+						data.computeIfAbsent(j, t -> new HashMap<Integer, Double>());
+						data.get(j).put(i, this.getElement(j, i));
+					}
+				}
+			}
+			return new SparseMatrix(this.col_count, this.row_count, data);
+		}
+	}
+
 	@Override public int hashCode(){
 
 		String caller = String.valueOf( (new Throwable().getStackTrace())[1] );
