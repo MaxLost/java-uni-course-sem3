@@ -134,23 +134,11 @@ public class DenseMatrix implements Matrix
 			}
 
 			HashMap<Integer, HashMap<Integer, Double>> data = new HashMap<>();
-			for (int i = 0; i < this.row_count; i++){
-				for (int j = 0; j < m.col_count; j++) {
-					double sum = 0;
-					for (int k = 0; k < this.col_count; k++){
-						if (m.getElement(j, k) != 0){
-							sum += this.getElement(k, i) * m.getElement(j, k);
-						}
-					}
-					if (sum != 0) {
-						data.computeIfAbsent(i, t -> new HashMap<Integer, Double>());
-						data.get(i).put(j, sum);
-					}
-				}
-			}
 
-			return new SparseMatrix(this.row_count, m.col_count, data);
+			SparseMatrix x = (SparseMatrix) m.transpose();
+			DenseMatrix y = (DenseMatrix) this.transpose();
 
+			return ((SparseMatrix) x.mul(y)).transpose();
 		} else {
 			throw new RuntimeException("Unable to multiply matrices due to wrong sizes");
 		}

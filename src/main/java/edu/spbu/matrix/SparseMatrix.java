@@ -3,9 +3,7 @@ package edu.spbu.matrix;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Scanner;
+import java.util.*;
 
 
 public class SparseMatrix implements Matrix
@@ -106,23 +104,21 @@ public class SparseMatrix implements Matrix
 			}
 
 			HashMap<Integer, HashMap<Integer, Double>> data = new HashMap<>();
-			for (int i = 0; i < this.row_count; i++){
-				for (int j = 0; j < m.col_count; j++) {
+
+			for (Integer row : this.data.keySet()){
+				for (int column = 0; column < m.col_count; column++){
 					double sum = 0;
-					for (int k = 0; k < this.col_count; k++){
-						if (this.getElement(k, i) != 0){
-							sum += this.getElement(k, i) * m.getElement(j, k);
-						}
+					for (Integer element : this.data.get(row).keySet()) {
+						sum += this.getElement(element, row) * m.getElement(column, element);
 					}
-					if (sum != 0) {
-						data.computeIfAbsent(i, t -> new HashMap<Integer, Double>());
-						data.get(i).put(j, sum);
+					if (Math.abs(sum) > EPSILON){
+						data.computeIfAbsent(row, t -> new HashMap<>());
+						data.get(row).put(column, sum);
 					}
 				}
 			}
 
 			return new SparseMatrix(this.row_count, m.col_count, data);
-
 		} else {
 			throw new RuntimeException("Unable to multiply matrices due to wrong sizes");
 		}
@@ -134,20 +130,19 @@ public class SparseMatrix implements Matrix
 			if (this.row_count == 0 | m.col_count == 0) {
 				return new SparseMatrix(0, 0, null);
 			}
-
 			HashMap<Integer, HashMap<Integer, Double>> data = new HashMap<>();
-			for (int i = 0; i < this.row_count; i++){
-				for (int j = 0; j < m.col_count; j++) {
-					double sum = 0;
-					for (int k = 0; k < this.col_count; k++){
-						if (this.getElement(k, i) != 0 & m.getElement(j, k) != 0){
-							sum += this.getElement(k, i) * m.getElement(j, k);
-						}
 
+			SparseMatrix x = (SparseMatrix) m.transpose();
+
+			for (Integer row : this.data.keySet()){
+				for (Integer column : x.data.keySet()){
+					double sum = 0;
+					for (Integer element : this.data.get(row).keySet()) {
+						sum += this.getElement(element, row) * x.getElement(element, column);
 					}
-					if (sum != 0) {
-						data.computeIfAbsent(i, t -> new HashMap<Integer, Double>());
-						data.get(i).put(j, sum);
+					if (Math.abs(sum) > EPSILON){
+						data.computeIfAbsent(row, t -> new HashMap<>());
+						data.get(row).put(column, sum);
 					}
 				}
 			}
@@ -177,12 +172,10 @@ public class SparseMatrix implements Matrix
 		}
 		else {
 			HashMap<Integer, HashMap<Integer, Double>> data = new HashMap<>();
-			for (int i = 0; i < this.row_count; i++){
-				for (int j = 0; j < this.col_count; j++){
-					if (this.getElement(j, i) != 0) {
-						data.computeIfAbsent(j, t -> new HashMap<Integer, Double>());
-						data.get(j).put(i, this.getElement(j, i));
-					}
+			for (Integer i : this.data.keySet()){
+				for (Integer j : this.data.get(i).keySet()){
+					data.computeIfAbsent(j, t -> new HashMap<Integer, Double>());
+					data.get(j).put(i, this.getElement(j, i));
 				}
 			}
 			return new SparseMatrix(this.col_count, this.row_count, data);
