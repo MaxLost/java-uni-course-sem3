@@ -210,7 +210,7 @@ public class MatrixTest
 		Matrix m2 = new SparseMatrix("sparse_test/4x5.txt");
 		Matrix result = m1.mul(m2);
 		Matrix expected = new SparseMatrix("sparse_test/2x4@4x5.txt");
-		assertEquals(result, expected);
+		assertEquals(expected, result);
 	}
 
 	@Test

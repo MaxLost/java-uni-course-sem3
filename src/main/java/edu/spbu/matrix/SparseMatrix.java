@@ -105,20 +105,20 @@ public class SparseMatrix implements Matrix
 
 			HashMap<Integer, HashMap<Integer, Double>> data = new HashMap<>();
 
-			for (Integer row : this.data.keySet()){
+			for (Map.Entry<Integer, HashMap<Integer, Double>> row: this.data.entrySet()){
 				for (int column = 0; column < m.col_count; column++){
 					double sum = 0;
-					for (Integer element : this.data.get(row).keySet()) {
-						sum += this.getElement(element, row) * m.getElement(column, element);
+					for (Map.Entry<Integer, Double> element : row.getValue().entrySet()) {
+						sum += element.getValue() * m.getElement(column, element.getKey());
 					}
-					if (Math.abs(sum) > EPSILON){
-						data.computeIfAbsent(row, t -> new HashMap<>());
-						data.get(row).put(column, sum);
+					if (Math.abs(sum) > EPSILON) {
+						data.computeIfAbsent(row.getKey(), t -> new HashMap<>());
+						data.get(row.getKey()).put(column, sum);
 					}
 				}
 			}
-
 			return new SparseMatrix(this.row_count, m.col_count, data);
+
 		} else {
 			throw new RuntimeException("Unable to multiply matrices due to wrong sizes");
 		}
@@ -132,17 +132,19 @@ public class SparseMatrix implements Matrix
 			}
 			HashMap<Integer, HashMap<Integer, Double>> data = new HashMap<>();
 
-			SparseMatrix x = (SparseMatrix) m.transpose();
+			SparseMatrix m1 = (SparseMatrix) m.transpose();
 
-			for (Integer row : this.data.keySet()){
-				for (Integer column : x.data.keySet()){
+			for (Map.Entry<Integer, HashMap<Integer, Double>> row: this.data.entrySet()){
+				for (Map.Entry<Integer, HashMap<Integer, Double>> column: m1.data.entrySet()){
 					double sum = 0;
-					for (Integer element : this.data.get(row).keySet()) {
-						sum += this.getElement(element, row) * x.getElement(element, column);
+					for (Map.Entry<Integer, Double> element : row.getValue().entrySet()) {
+						double m1_element = column.getValue().get(element.getKey()) == null ?
+								0 : column.getValue().get(element.getKey());
+						sum += element.getValue() * m1_element;
 					}
-					if (Math.abs(sum) > EPSILON){
-						data.computeIfAbsent(row, t -> new HashMap<>());
-						data.get(row).put(column, sum);
+					if (Math.abs(sum) > EPSILON) {
+						data.computeIfAbsent(row.getKey(), t -> new HashMap<>());
+						data.get(row.getKey()).put(column.getKey(), sum);
 					}
 				}
 			}
