@@ -138,9 +138,7 @@ public class SparseMatrix implements Matrix
 				for (Map.Entry<Integer, HashMap<Integer, Double>> column: m1.data.entrySet()){
 					double sum = 0;
 					for (Map.Entry<Integer, Double> element : row.getValue().entrySet()) {
-						double m1_element = column.getValue().get(element.getKey()) == null ?
-								0 : column.getValue().get(element.getKey());
-						sum += element.getValue() * m1_element;
+						sum += element.getValue() * m1.getElement(element.getKey(), column.getKey());
 					}
 					if (Math.abs(sum) > EPSILON) {
 						data.computeIfAbsent(row.getKey(), t -> new HashMap<>());
