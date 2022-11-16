@@ -5,7 +5,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class DenseMatrix implements Matrix
@@ -152,9 +154,73 @@ public class DenseMatrix implements Matrix
 	 * @param o - B matrix in (1)
 	 * @return - result of matrix multiplication, C matrix in (1)
 	 */
-	@Override public Matrix dmul(Matrix o)
-	{
-		return null;
+	@Override public Matrix dmul(Matrix o) {
+
+		if (o instanceof DenseMatrix) {
+			DenseMatrix m = (DenseMatrix) o;
+			DenseMatrix n = this;
+
+			if (this.col_count == m.row_count) {
+				if (this.row_count == 0 | m.col_count == 0) {
+					return new DenseMatrix(0, 0, null);
+				}
+				class RowCounter {
+					int counter = -1;
+
+					public synchronized int getRow() {
+						this.counter++;
+						return counter;
+					}
+				}
+
+				RowCounter counter = new RowCounter();
+				double[][] data = new double[n.row_count][m.col_count];
+
+				class Multiplicator implements Runnable {
+					@Override
+					public void run() {
+						int row = counter.getRow();
+						while (row < n.row_count) {
+
+							double[] result = new double[m.col_count];
+
+							for (int i = 0; i < m.col_count; i++) {
+								for (int j = 0; j < n.col_count; j++) {
+									result[i] += n.getElement(j, row) * m.getElement(i, j);
+								}
+							}
+							writeResult(result, row);
+
+							row = counter.getRow();
+						}
+					}
+
+					private synchronized void writeResult(double[] result, int row){
+						data[row] = result;
+					}
+				}
+
+				Thread[] threads = new Thread[4];
+				for (int i = 0; i < 4; i++) {
+					threads[i] = new Thread(new Multiplicator());
+					threads[i].start();
+				}
+				for (int i = 0; i < 4; i++) {
+					try {
+						threads[i].join();
+					} catch (InterruptedException e) {
+						throw new RuntimeException("Multiplication failed! Try again!", e);
+					}
+				}
+
+				return new DenseMatrix(n.row_count, m.col_count, data);
+			}
+			else {
+				throw new RuntimeException("Unable to multiply matrices due to wrong sizes");
+			}
+		} else {
+			return this.mul(o);
+		}
 	}
 
 	public Matrix transpose() {

@@ -11,14 +11,14 @@ public class MatrixTest
 		DenseMatrix m = new DenseMatrix("dense_test/load_test.txt");
 		double[][] expected_data = { {1.0, 2.0, 0}, {3.0, 4.0, 1.0}, {10.0, 8.0, 0} };
 		DenseMatrix expected = new DenseMatrix(3, 3, expected_data);
-		assertEquals(m, expected);
+		assertEquals(expected, m);
 	}
 
 	@Test
 	public void loadEmptyDenseMatrix() {
 		DenseMatrix m = new DenseMatrix("dense_test/empty.txt");
 		DenseMatrix expected = new DenseMatrix(0, 0, new double[0][0]);
-		assertEquals(m, expected);
+		assertEquals(expected, m);
 	}
 
 	@Test
@@ -34,7 +34,7 @@ public class MatrixTest
 		DenseMatrix m1 = new DenseMatrix("dense_test/2x4.txt");
 		Matrix result = m1.transpose();
 		DenseMatrix expected = new DenseMatrix("dense_test/2x4_transposed.txt");
-		assertEquals(result, expected);
+		assertEquals(expected, result);
 	}
 
 	@Test
@@ -42,7 +42,7 @@ public class MatrixTest
 		SparseMatrix m1 = new SparseMatrix("sparse_test/5x3.txt");
 		Matrix result = m1.transpose();
 		SparseMatrix expected = new SparseMatrix("sparse_test/5x3_transposed.txt");
-		assertEquals(result, expected);
+		assertEquals(expected, result);
 	}
 
 	@Test
@@ -51,7 +51,7 @@ public class MatrixTest
 		DenseMatrix m2 = new DenseMatrix(0, 0, new double[0][0]);
 		Matrix result = m1.mul(m2);
 		DenseMatrix expected = new DenseMatrix(0, 0, new double[0][0]);
-		assertEquals(result, expected);
+		assertEquals(expected, result);
 	}
 
 	@Test
@@ -60,7 +60,7 @@ public class MatrixTest
 		DenseMatrix v = new DenseMatrix("dense_test/vector.txt");
 		Matrix result = m1.mul(v);
 		DenseMatrix expected = new DenseMatrix("dense_test/m@v.txt");
-		assertEquals(result, expected);
+		assertEquals(expected, result);
 	}
 
 	@Test
@@ -129,7 +129,7 @@ public class MatrixTest
 		Matrix m2 = new DenseMatrix("dense_test/m2.txt");
 		Matrix result = m1.mul(m2);
 		Matrix expected = new DenseMatrix("dense_test/m1@m2.txt");
-		assertEquals(result, expected);
+		assertEquals(expected, result);
 	}
 
 	@Test
@@ -138,7 +138,7 @@ public class MatrixTest
 		Matrix m2 = new DenseMatrix("dense_test/m2.txt");
 		Matrix result = m2.mul(m1);
 		Matrix expected = new DenseMatrix("dense_test/m2@m1.txt");
-		assertEquals(result, expected);
+		assertEquals(expected, result);
 	}
 
 	@Test
@@ -147,7 +147,7 @@ public class MatrixTest
 		Matrix m2 = new DenseMatrix("dense_test/3x3.txt");
 		Matrix result = m2.mul(m1);
 		Matrix expected = new DenseMatrix("dense_test/3x3_expected.txt");
-		assertEquals(result, expected);
+		assertEquals(expected, result);
 	}
 
 	@Test
@@ -175,14 +175,14 @@ public class MatrixTest
 		data.get(2).put(2, -3.0);
 		Matrix expected = new SparseMatrix(3, 3, data);
 
-		assertEquals(m, expected);
+		assertEquals(expected, m);
 	}
 
 	@Test
 	public void loadEmptySparseMatrix() {
 		Matrix m = new SparseMatrix("dense_test/empty.txt");
 		Matrix expected = new SparseMatrix(0, 0, null);
-		assertEquals(m, expected);
+		assertEquals(expected, m);
 	}
 
 	@Test
@@ -201,7 +201,7 @@ public class MatrixTest
 		Matrix v = new DenseMatrix("sparse_test/vector.txt");
 		Matrix result = m.mul(v);
 		Matrix expected = new DenseMatrix("sparse_test/4x5@v.txt");
-		assertEquals(result, expected);
+		assertEquals(expected, result);
 	}
 
 	@Test
@@ -219,7 +219,26 @@ public class MatrixTest
 		Matrix m2 = new DenseMatrix("dense_test/3x3.txt");
 		Matrix result = m1.mul(m2);
 		Matrix expected = new SparseMatrix("sparse_test/5x3@3x3.txt");
-		assertEquals(result, expected);
+		assertEquals(expected, result);
+	}
+
+	@Test
+	public void dmulDD1(){
+		Matrix m1 = new DenseMatrix("dense_test/m1.txt");
+		Matrix m2 = new DenseMatrix("dense_test/m2.txt");
+		Matrix result = m2.dmul(m1);
+		Matrix expected = new DenseMatrix("dense_test/m2@m1.txt");
+		assertEquals(expected, result);
+	}
+
+	@Test
+	public void dmulSS1() {
+		Matrix m1 = new SparseMatrix("sparse_test/4x5.txt");
+		Matrix m2 = new SparseMatrix("sparse_test/5x3.txt");
+		Matrix result = m1.dmul(m2);
+		Matrix expected = new SparseMatrix("sparse_test/4x5@5x3.txt");
+
+		assertEquals(expected, result);
 	}
 
 	/*

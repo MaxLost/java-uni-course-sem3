@@ -1,9 +1,11 @@
 package edu.spbu.matrix;
 
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class SparseMatrix implements Matrix
@@ -163,7 +165,74 @@ public class SparseMatrix implements Matrix
 	 * @return - result of matrix multiplication, C matrix in (1)
 	 */
 	@Override public Matrix dmul(Matrix o) {
-		return null;
+
+		if (o instanceof SparseMatrix) {
+			SparseMatrix m = (SparseMatrix) ((SparseMatrix) o).transpose();
+			SparseMatrix n = this;
+
+			if (this.col_count == m.col_count) {
+				if (this.row_count == 0 | m.row_count == 0) {
+					return new SparseMatrix(0, 0, null);
+				}
+				class RowCounter {
+					int counter = -1;
+
+					public synchronized int getRow() {
+						this.counter++;
+						return counter;
+					}
+				}
+
+				RowCounter counter = new RowCounter();
+				ConcurrentHashMap<Integer, HashMap<Integer, Double>> data = new ConcurrentHashMap<>();
+
+				class Multiplicator implements Runnable {
+					@Override
+					public void run() {
+						int row = counter.getRow();
+						while (row < n.row_count) {
+
+							HashMap<Integer, Double> result = new HashMap<>();
+
+							for (Map.Entry<Integer, HashMap<Integer, Double>> column : m.data.entrySet()) {
+								double sum = 0;
+								for (Map.Entry<Integer, Double> element : n.data.get(row).entrySet()) {
+									sum += element.getValue() * m.getElement(element.getKey(), column.getKey());
+								}
+								if (Math.abs(sum) > EPSILON) {
+									result.put(column.getKey(), sum);
+								}
+							}
+							if (!result.isEmpty()) {
+								data.put(row, result);
+							}
+
+							row = counter.getRow();
+						}
+					}
+				}
+
+				Thread[] threads = new Thread[4];
+				for (int i = 0; i < 4; i++) {
+					threads[i] = new Thread(new Multiplicator());
+					threads[i].start();
+				}
+				for (int i = 0; i < 4; i++) {
+					try {
+						threads[i].join();
+					} catch (InterruptedException e) {
+						throw new RuntimeException("Multiplication failed! Try again!", e);
+					}
+				}
+
+				return new SparseMatrix(n.row_count, m.row_count, new HashMap<>(data));
+			}
+			else {
+				throw new RuntimeException("Unable to multiply matrices due to wrong sizes");
+			}
+		} else {
+			return this.mul(o);
+		}
 	}
 
 	public Matrix transpose() {
