@@ -210,14 +210,17 @@ public class SparseMatrix implements Matrix
 					}
 				}
 
-				for (int i = 0; i < 4; i++) {
-					Thread t = new Thread(new Multiplicator());
-					t.start();
-					try {
-						t.join();
-					} catch (InterruptedException e) {
-						throw new RuntimeException("Multiplication failed! Try again!", e);
+				Thread[] threads = new Thread[4];
+				for (int i = 0; i < threads.length; i++) {
+					threads[i] = new Thread(new Multiplicator());
+					threads[i].start();
+				}
+				try {
+					for (Thread thread : threads) {
+						thread.join();
 					}
+				} catch (InterruptedException e) {
+					throw new RuntimeException("Multiplication failed! Try again!", e);
 				}
 
 				return new SparseMatrix(n.row_count, m.row_count, new HashMap<>(data));
