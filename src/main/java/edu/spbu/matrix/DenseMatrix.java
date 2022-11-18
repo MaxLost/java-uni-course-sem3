@@ -164,24 +164,15 @@ public class DenseMatrix implements Matrix
 				if (this.row_count == 0 | m.col_count == 0) {
 					return new DenseMatrix(0, 0, null);
 				}
-				class RowCounter {
-					int counter = -1;
 
-					public synchronized int getRow() {
-						this.counter++;
-						return counter;
-					}
-				}
-
-				RowCounter counter = new RowCounter();
+				MulTaskManager task_manager = new MulTaskManager(n.row_count);
 				double[][] data = new double[n.row_count][m.col_count];
 
 				class Multiplicator implements Runnable {
 					@Override
 					public void run() {
-						int row = counter.getRow();
-						while (row < n.row_count) {
-
+						Integer row;
+						while ((row = task_manager.next()) != null){
 							double[] result = new double[m.col_count];
 
 							for (int i = 0; i < m.col_count; i++) {
@@ -189,25 +180,16 @@ public class DenseMatrix implements Matrix
 									result[i] += n.getElement(j, row) * m.getElement(i, j);
 								}
 							}
-							writeResult(result, row);
-
-							row = counter.getRow();
+							data[row] = result;
 						}
 					}
-
-					private synchronized void writeResult(double[] result, int row){
-						data[row] = result;
-					}
 				}
 
-				Thread[] threads = new Thread[4];
 				for (int i = 0; i < 4; i++) {
-					threads[i] = new Thread(new Multiplicator());
-					threads[i].start();
-				}
-				for (int i = 0; i < 4; i++) {
+					Thread t = new Thread(new Multiplicator());
+					t.start();
 					try {
-						threads[i].join();
+						t.join();
 					} catch (InterruptedException e) {
 						throw new RuntimeException("Multiplication failed! Try again!", e);
 					}

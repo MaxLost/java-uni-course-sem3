@@ -183,14 +183,14 @@ public class SparseMatrix implements Matrix
 					}
 				}
 
-				RowCounter counter = new RowCounter();
+				MulTaskManager task_manager = new MulTaskManager(n.row_count);
 				ConcurrentHashMap<Integer, HashMap<Integer, Double>> data = new ConcurrentHashMap<>();
 
 				class Multiplicator implements Runnable {
 					@Override
 					public void run() {
-						int row = counter.getRow();
-						while (row < n.row_count) {
+						Integer row;
+						while ((row = task_manager.next()) != null) {
 
 							HashMap<Integer, Double> result = new HashMap<>();
 
@@ -206,20 +206,15 @@ public class SparseMatrix implements Matrix
 							if (!result.isEmpty()) {
 								data.put(row, result);
 							}
-
-							row = counter.getRow();
 						}
 					}
 				}
 
-				Thread[] threads = new Thread[4];
 				for (int i = 0; i < 4; i++) {
-					threads[i] = new Thread(new Multiplicator());
-					threads[i].start();
-				}
-				for (int i = 0; i < 4; i++) {
+					Thread t = new Thread(new Multiplicator());
+					t.start();
 					try {
-						threads[i].join();
+						t.join();
 					} catch (InterruptedException e) {
 						throw new RuntimeException("Multiplication failed! Try again!", e);
 					}
