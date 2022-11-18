@@ -174,14 +174,6 @@ public class SparseMatrix implements Matrix
 				if (this.row_count == 0 | m.row_count == 0) {
 					return new SparseMatrix(0, 0, null);
 				}
-				class RowCounter {
-					int counter = -1;
-
-					public synchronized int getRow() {
-						this.counter++;
-						return counter;
-					}
-				}
 
 				MulTaskManager task_manager = new MulTaskManager(n.row_count);
 				ConcurrentHashMap<Integer, HashMap<Integer, Double>> data = new ConcurrentHashMap<>();
