@@ -44,9 +44,9 @@ public class SparseMatrix implements Matrix
 				for (int i = 0; i < this.row_count; i++) {
 					String[] numbers = rows.get(i).split(" ");
 					for (int j = 0; j < this.col_count; j++) {
-						data.computeIfAbsent(i, t -> new HashMap<Integer, Double>());
 						double value = Double.parseDouble(numbers[j]);
 						if (Math.abs(value) > EPSILON) {
+							data.computeIfAbsent(i, t -> new HashMap<Integer, Double>());
 							data.get(i).put(j, value);
 						}
 					}
@@ -183,6 +183,9 @@ public class SparseMatrix implements Matrix
 					public void run() {
 						Integer row;
 						while ((row = task_manager.next()) != null) {
+							if (n.data.get(row) == null | m.data == null) {
+								return;
+							}
 
 							HashMap<Integer, Double> result = new HashMap<>();
 
@@ -207,12 +210,12 @@ public class SparseMatrix implements Matrix
 					threads[i] = new Thread(new Multiplicator());
 					threads[i].start();
 				}
-				try {
-					for (Thread thread : threads) {
+				for (Thread thread : threads) {
+					try {
 						thread.join();
+					} catch(InterruptedException e){
+						throw new RuntimeException("Multiplication failed! Try again!", e);
 					}
-				} catch (InterruptedException e) {
-					throw new RuntimeException("Multiplication failed! Try again!", e);
 				}
 
 				return new SparseMatrix(n.row_count, m.row_count, new HashMap<>(data));

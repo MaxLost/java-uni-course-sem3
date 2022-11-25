@@ -22,6 +22,7 @@ public class MulTaskManager implements Iterator {
 	@Override
 	synchronized public Integer next() {
 		this.current_row++;
+		System.out.println(current_row);
 		return (this.current_row < this.rows) ? this.current_row : null;
 	}
 }

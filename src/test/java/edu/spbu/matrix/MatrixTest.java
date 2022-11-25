@@ -167,7 +167,7 @@ public class MatrixTest
 	@Test
 	public void loadSparseMatrix(){
 		Matrix m = new SparseMatrix("sparse_test/load.txt");
-
+		// System.out.println(((SparseMatrix) m).data.get(0));
 		HashMap<Integer, HashMap<Integer, Double>> data = new HashMap<>();
 		data.put(1, new HashMap<Integer, Double>());
 		data.get(1).put(1, 5.0);
@@ -269,6 +269,25 @@ public class MatrixTest
 			}
 		}
 		if (!catched) { fail("Multiplication with wrong sizes happened"); }
+	}
+
+	@Test
+	public void perfomance(){
+		System.out.println("Starting loading sparse matrices");
+		Matrix m1 = new SparseMatrix("m1.txt");
+		System.out.println("1 loaded");
+		Matrix m2 = new SparseMatrix("m2.txt");
+		System.out.println("2 loaded");
+		long start = 0;
+		start = System.currentTimeMillis();
+		SparseMatrix result1 = (SparseMatrix) m1.mul(m2);
+		System.out.println("Mul Sparse Matrix time: " +(System.currentTimeMillis() - start));
+		start = System.currentTimeMillis();
+		SparseMatrix result2 = (SparseMatrix) m1.dmul(m2);
+		System.out.println("Dmul Sparse Matrix time: " +(System.currentTimeMillis() - start));
+		System.out.println(result1.equals(result2));
+		System.out.println(result1);
+		System.out.println(result2);
 	}
 
 	/*

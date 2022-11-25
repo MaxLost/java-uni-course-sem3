@@ -1,5 +1,10 @@
 package edu.spbu;
 
+import edu.spbu.matrix.*;
+//import edu.spbu.matrix.DenseMatrix;
+//import edu.spbu.matrix.Matrix;
+//import edu.spbu.matrix.SparseMatrix;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -15,7 +20,7 @@ public class MatrixGenerator
 
   public static final String MATRIX1_NAME = "m1.txt";
   public static final String MATRIX2_NAME = "m2.txt";
-  public static final int SIZE = 2000;
+  public static final int SIZE = 100;
 
   private final int emptyRowFraction;
   private final int size;
@@ -49,25 +54,33 @@ public class MatrixGenerator
   private static void testPerformance()
   {
     // Uncomment the code to Test your library
-    /*
-    System.out.println("Starting loading dense matrices");
-    Matrix m1 = new DenseMatrix(MATRIX1_NAME);
-    System.out.println("1 loaded");
-    Matrix m2 = new DenseMatrix(MATRIX2_NAME);
-    System.out.println("2 loaded");
-    long start = System.currentTimeMillis();
-    m1.mul(m2);
-    System.out.println("Dense Matrix time: " +(System.currentTimeMillis() - start));
+    //*
+//    System.out.println("Starting loading dense matrices");
+//    Matrix m1 = new DenseMatrix(MATRIX1_NAME);
+//    System.out.println("1 loaded");
+//    Matrix m2 = new DenseMatrix(MATRIX2_NAME);
+//    System.out.println("2 loaded");
+//    long start = System.currentTimeMillis();
+//    m1.mul(m2);
+//    System.out.println("Dense Matrix time: " +(System.currentTimeMillis() - start));
 
     System.out.println("Starting loading sparse matrices");
-    m1 = new SparseMatrix(MATRIX1_NAME);
+    Matrix m1 = new SparseMatrix(MATRIX1_NAME);
     System.out.println("1 loaded");
-    m2 = new SparseMatrix(MATRIX2_NAME);
+    Matrix m2 = new SparseMatrix(MATRIX2_NAME);
     System.out.println("2 loaded");
+    long start = 0;
     start = System.currentTimeMillis();
-    m1.mul(m2);
-    System.out.println("Sparse Matrix time: " +(System.currentTimeMillis() - start));
-    */
+    Matrix result1 = m1.mul(m2);
+    System.out.println("Mul Sparse Matrix time: " +(System.currentTimeMillis() - start));
+    start = System.currentTimeMillis();
+    Matrix result2 = m1.dmul(m2);
+    System.out.println("Dmul Sparse Matrix time: " +(System.currentTimeMillis() - start));
+    System.out.println(result1.equals(result2));
+    System.out.println(result1);
+    System.out.println(result2);
+
+    //*/
   }
 
   public void generate() throws IOException
