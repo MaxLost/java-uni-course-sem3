@@ -241,6 +241,36 @@ public class MatrixTest
 		assertEquals(expected, result);
 	}
 
+	@Test
+	public void dmulDDSizeTest() {
+		DenseMatrix m1 = new DenseMatrix("dense_test/4x3.txt");
+		DenseMatrix m2 = new DenseMatrix("dense_test/2x4.txt");
+		boolean catched = false;
+		try {
+			m1.dmul(m2);
+		} catch (RuntimeException e) {
+			if (e.getMessage().equals("Unable to multiply matrices due to wrong sizes")) {
+				catched = true;
+			}
+		}
+		if (!catched) { fail("Multiplication with wrong sizes happened"); }
+	}
+
+	@Test
+	public void dmulSSSizeTest() {
+		Matrix m1 = new SparseMatrix("sparse_test/5x3.txt");
+		Matrix m2 = new SparseMatrix("sparse_test/4x5.txt");
+		boolean catched = false;
+		try {
+			m1.mul(m2);
+		} catch (RuntimeException e) {
+			if (e.getMessage().equals("Unable to multiply matrices due to wrong sizes")) {
+				catched = true;
+			}
+		}
+		if (!catched) { fail("Multiplication with wrong sizes happened"); }
+	}
+
 	/*
 	@Test
 	public void mulDD() {
