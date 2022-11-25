@@ -12,16 +12,16 @@ public class MulTaskManager implements Iterator {
 	}
 
 	/**
-	 *  Don't use this method alone with threads
+	 *  Dummy method
 	 **/
 	@Override
 	synchronized public boolean hasNext() {
-		return this.current_row < this.rows;
+		return false;
 	}
 
 	@Override
 	synchronized public Integer next() {
 		this.current_row++;
-		return this.hasNext() ? this.current_row : null;
+		return (this.current_row < this.rows) ? this.current_row : null;
 	}
 }
