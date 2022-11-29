@@ -181,12 +181,12 @@ public class SparseMatrix implements Matrix
 				class Multiplicator implements Runnable {
 					@Override
 					public void run() {
-						Integer row;
-						while ((row = task_manager.next()) != null) {
-							if (n.data.get(row) == null | m.data == null) {
-								return;
+						Integer row = task_manager.next();
+						while (row != null) {
+							if (n.data == null || m.data == null || n.data.get(row) == null) {
+								row = task_manager.next();
+								continue;
 							}
-
 							HashMap<Integer, Double> result = new HashMap<>();
 
 							for (Map.Entry<Integer, HashMap<Integer, Double>> column : m.data.entrySet()) {
@@ -201,6 +201,7 @@ public class SparseMatrix implements Matrix
 							if (!result.isEmpty()) {
 								data.put(row, result);
 							}
+							row = task_manager.next();
 						}
 					}
 				}
@@ -213,7 +214,7 @@ public class SparseMatrix implements Matrix
 				for (Thread thread : threads) {
 					try {
 						thread.join();
-					} catch(InterruptedException e){
+					} catch (InterruptedException e) {
 						throw new RuntimeException("Multiplication failed! Try again!", e);
 					}
 				}

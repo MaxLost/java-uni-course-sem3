@@ -285,9 +285,7 @@ public class MatrixTest
 		start = System.currentTimeMillis();
 		SparseMatrix result2 = (SparseMatrix) m1.dmul(m2);
 		System.out.println("Dmul Sparse Matrix time: " +(System.currentTimeMillis() - start));
-		System.out.println(result1.equals(result2));
-		System.out.println(result1);
-		System.out.println(result2);
+		assertEquals(result1, result2);
 	}
 
 	/*
