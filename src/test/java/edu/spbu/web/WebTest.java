@@ -13,7 +13,7 @@ public class WebTest {
 
 	@Test
 	public void ServerRun(){
-		Server x = new Server("server.web.spbu.edu", 80);
+		Server x = new Server("127.0.0.1", 80);
 		x.run();
 	}
 }
