@@ -56,7 +56,7 @@ public class Server {
 				){
 					List<String> request = new ArrayList<>();
 					String line;
-					while (!(line = input.readLine()).equals("")){
+					while ((line = input.readLine()) != null && !line.equals("")){
 						Collections.addAll(request, line.split(" "));
 					}
 
@@ -65,38 +65,25 @@ public class Server {
 						if (request.get(4).equals(hostname)) {
 							if (request.get(0).equals("GET")) {
 								String path = (request.get(1).equals("/")) ? "/index.html" : request.get(1);
+
+								if (path.equals("")){
+									sendBadRequestResponse(this.connection);
+									connection.close();
+									return;
+								}
+
 								Path requested_file = Paths.get(root + path);
 
-								try (Scanner scanner = new Scanner(requested_file)){
-									java.util.Date date = new java.util.Date();
-									output.write(protocol + " 200 Ok\nContent-Type: text/html\n" +
-											"Content-Length: "+ Files.size(requested_file) +"\nConnection: close\n" +
-											"Date: " + date + "\nServer: Custom\n\r\n");
-									while (scanner.hasNextLine()){
-										output.write(scanner.nextLine());
-									}
-									output.flush();
-									connection.close();
-								} catch (IOException e) {
-									java.util.Date date = new java.util.Date();
-									output.write(protocol + " 404 Not Found\nContent-Type: text/html\n" +
-											"Content-Length: 0\nConnection: close\nDate: " + date +
-											"\nServer: Custom\n\r\n");
-									output.flush();
-									connection.close();
-								}
+								sendFile(this.connection, protocol, requested_file);
+
 							} else {
-								java.util.Date date = new java.util.Date();
-								output.write(protocol + " 400 Bad Request\nContent-Type: text/html\n" +
-										"Content-Length: 0\nConnection: close\nDate: " + date + "\nServer: Custom\n\r\n");
-								output.flush();
+								sendBadRequestResponse(this.connection);
 								connection.close();
 							}
 						}
 					}
-
 				} catch (java.io.IOException e) {
-					throw new RuntimeException("Failed to get package!", e);
+					throw new RuntimeException("Failed to get or send package", e);
 				}
 			}
 
@@ -120,6 +107,63 @@ public class Server {
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			}
+		}
+	}
+
+	private void sendFileNotFoundResponse(Socket connection, String protocol) {
+		try (PrintWriter output = new PrintWriter(connection.getOutputStream())) {
+			java.util.Date date = new java.util.Date();
+			Path response = Paths.get(root + "/404.html");
+			output.write(protocol + " 404 Not Found\nContent-Type: text/html\n" +
+					"Content-Length: " + Files.size(response) + "\nConnection: close\nDate: "
+					+ date + "\nServer: Custom\n\r\n");
+			try (Scanner scanner = new Scanner(response)) {
+				while (scanner.hasNextLine()) {
+					output.write(scanner.nextLine() + "\n");
+				}
+			}
+			output.flush();
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to get or send package", e);
+		}
+	}
+
+	private void sendFile(Socket connection, String protocol, Path requested_file){
+		try (PrintWriter output = new PrintWriter(connection.getOutputStream())) {
+			try (Scanner scanner = new Scanner(requested_file)) {
+				java.util.Date date = new java.util.Date();
+				output.write(protocol + " 200 OK\nContent-Type: text/html\n" +
+						"Content-Length: " + Files.size(requested_file) + "\nConnection: close\n" +
+						"Date: " + date + "\nServer: Custom\n\r\n");
+				while (scanner.hasNextLine()) {
+					output.write(scanner.nextLine() + "\n");
+				}
+				output.flush();
+				connection.close();
+			} catch (NoSuchFileException e) {
+				sendFileNotFoundResponse(connection, protocol);
+			}
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to get or send package", e);
+		}
+	}
+
+	private void sendBadRequestResponse(Socket connection){
+
+		try (PrintWriter output = new PrintWriter(connection.getOutputStream())) {
+			java.util.Date date = new java.util.Date();
+			Path response = Paths.get(root + "/400.html");
+			output.write("HTTP/1.0 400 Bad Request\nContent-Type: text/html\n" +
+					"Content-Length: " + Files.size(response) + "\nConnection: close\nDate: "
+					+ date + "\nServer: Custom\n\r\n");
+			try (Scanner scanner = new Scanner(response)) {
+				while (scanner.hasNextLine()) {
+					output.write(scanner.nextLine() + "\n");
+				}
+			}
+			output.flush();
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to get or send package", e);
 		}
 	}
 
