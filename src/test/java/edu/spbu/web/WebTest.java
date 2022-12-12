@@ -13,8 +13,6 @@ public class WebTest {
 
 	@Test
 	public void ServerRun(){
-		Server x = new Server("127.0.0.1", 80);
-		x.run();
-		x.stop();
+
 	}
 }

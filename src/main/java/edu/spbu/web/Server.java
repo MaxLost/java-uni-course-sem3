@@ -4,13 +4,15 @@ import java.io.*;
 import java.net.*;
 import java.nio.file.*;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 public class Server {
 
 	ServerSocket socket;
 	String hostname;    // = "server.web.spbu.edu"
 	private String root = "src/resources/server";
-	private boolean isRunning;
+
+	private CountDownLatch stop_signal = null;
 
 	public Server(String hostname, int port) {
 		try {
@@ -21,8 +23,6 @@ public class Server {
 		} catch (Exception e) {
 			throw new RuntimeException("Server start failed, try again", e);
 		}
-		isRunning = true;
-		System.out.println("Server started");
 	}
 
 	public Server(String hostname, int port, String root) {
@@ -35,78 +35,106 @@ public class Server {
 			throw new RuntimeException("Server start failed, try again", e);
 		}
 		this.root = root;
-		isRunning = true;
 	}
 
 	public void run(){
-		ArrayList<Thread> thread_pool = new ArrayList<>();
+		Server this_server = this;
+		List<Thread> thread_pool = Collections.synchronizedList(new ArrayList<Thread>());
+		Thread server_thread = new Thread("Server Thread") {
 
-		class Responder implements Runnable {
+			class Responder implements Runnable {
 
-			private final Socket connection;
+				private final Socket connection;
 
-			public Responder(Socket connection){
-				this.connection = connection;
-			}
+				public Responder(Socket connection) {
+					this.connection = connection;
+				}
 
-			@Override
-			public void run(){
-				try (PrintWriter output = new PrintWriter(this.connection.getOutputStream());
-				     BufferedReader input = new BufferedReader(new InputStreamReader(this.connection.getInputStream()))
-				){
-					List<String> request = new ArrayList<>();
-					String line;
-					while ((line = input.readLine()) != null && !line.equals("")){
-						Collections.addAll(request, line.split(" "));
-					}
+				@Override
+				public void run() {
+					try (PrintWriter output = new PrintWriter(this.connection.getOutputStream());
+					     BufferedReader input = new BufferedReader(new InputStreamReader(this.connection.getInputStream()))
+					) {
+						List<String> request = new ArrayList<>();
+						String line;
+						while ((line = input.readLine()) != null && !line.equals("")) {
+							Collections.addAll(request, line.split(" "));
+						}
 
-					if (request.get(2).equals("HTTP/1.0") || request.get(2).equals("HTTP/1.1")){
-						String protocol = request.get(2);
-						if (request.get(4).equals(hostname)) {
-							if (request.get(0).equals("GET")) {
-								String path = (request.get(1).equals("/")) ? "/index.html" : request.get(1);
+						if (request.size() < 2) {
+							sendBadRequestResponse(this.connection);
+							connection.close();
+							return;
+						}
 
-								if (path.equals("")){
+						if (request.get(2).equals("HTTP/1.0") || request.get(2).equals("HTTP/1.1")) {
+							String protocol = request.get(2);
+							if (request.get(4).equals(hostname)) {
+								if (request.get(0).equals("GET")) {
+									String path = (request.get(1).equals("/")) ? "/index.html" : request.get(1);
+
+									if (path.equals("")) {
+										sendBadRequestResponse(this.connection);
+										connection.close();
+										return;
+									}
+
+									Path requested_file = Paths.get(root + path);
+
+									sendFile(this.connection, protocol, requested_file);
+
+								} else {
 									sendBadRequestResponse(this.connection);
 									connection.close();
-									return;
 								}
-
-								Path requested_file = Paths.get(root + path);
-
-								sendFile(this.connection, protocol, requested_file);
-
-							} else {
-								sendBadRequestResponse(this.connection);
-								connection.close();
 							}
 						}
+					} catch (java.io.IOException e) {
+						throw new RuntimeException("Failed to get or send package", e);
 					}
-				} catch (java.io.IOException e) {
-					throw new RuntimeException("Failed to get or send package", e);
+				}
+
+			}
+			public void run() {
+				while (true) {
+					try {
+						Socket x = this_server.socket.accept();
+						System.out.println("Connection: " + x.getInetAddress());
+						Thread thread = new Thread(new Responder(x));
+						thread.start();
+						thread_pool.add(thread);
+					} catch (SocketException se){
+						System.out.println("Server stopped");
+						return;
+					}
+					catch (IOException e) {
+						throw new RuntimeException("Failed to establish connection with client", e);
+					}
 				}
 			}
+		};
 
-		}
+		server_thread.start();
+		System.out.println("Server started");
 
-		while (isRunning) {
-			try {
-				Socket x = this.socket.accept();
-				System.out.println("Connection: " + x.getInetAddress());
-				Thread thread = new Thread(new Responder(x));
-				thread.start();
-				thread_pool.add(thread);
-			} catch (IOException e) {
-				throw new RuntimeException("Failed to establish connection with client", e);
+		try (Scanner stdin = new Scanner(System.in)){
+			String line = stdin.nextLine();
+			while (true) {
+				if (line.equals("stop")){
+					for (Thread t : thread_pool) {
+						try {
+							t.join();
+						} catch (InterruptedException e) {
+							throw new RuntimeException(e);
+						}
+					}
+					this.socket.close();
+					return;
+				}
+				line = stdin.nextLine();
 			}
-		}
-
-		for (Thread t : thread_pool){
-			try {
-				t.join();
-			} catch (InterruptedException e) {
-				throw new RuntimeException(e);
-			}
+		} catch (IOException e){
+			throw new RuntimeException("Server can't receive messages, please restart it", e);
 		}
 	}
 
@@ -168,11 +196,7 @@ public class Server {
 	}
 
 	public void stop(){
-		this.isRunning = false;
-	}
-
-	public boolean isRunning(){
-		return this.isRunning;
+		this.stop_signal.countDown();
 	}
 
 }
