@@ -12,8 +12,6 @@ public class Server {
 	String hostname;    // = "server.web.spbu.edu"
 	private String root = "src/resources/server";
 
-	private CountDownLatch stop_signal = null;
-
 	public Server(String hostname, int port) {
 		try {
 			this.hostname = hostname;
@@ -193,10 +191,6 @@ public class Server {
 		} catch (IOException e) {
 			throw new RuntimeException("Failed to get or send package", e);
 		}
-	}
-
-	public void stop(){
-		this.stop_signal.countDown();
 	}
 
 }
