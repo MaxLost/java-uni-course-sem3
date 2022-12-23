@@ -67,9 +67,10 @@ class RequestResponder implements Runnable {
 	private void sendFileNotFoundResponse(Socket connection, String protocol) {
 		try {
 			byte[] file = Files.readAllBytes(Paths.get(server.getRoot() + "/404.html"));
-			respond(connection, "HTTP/1.0", "404 File Not Found", file);
+			respond(connection, protocol, "404 File Not Found", file);
 			connection.close();
 		} catch (IOException e) {
+			respond(connection, protocol, "404 File Not Found", new byte[0]);
 			throw new RuntimeException("Failed to read requested file", e);
 		}
 	}
@@ -90,6 +91,7 @@ class RequestResponder implements Runnable {
 			respond(connection, "HTTP/1.0", "400 Bad Request", file);
 
 		} catch (IOException e) {
+			respond(connection, "HTTP/1.0", "400 Bad Request", new byte[0]);
 			throw new RuntimeException("Failed to read file", e);
 		}
 	}
