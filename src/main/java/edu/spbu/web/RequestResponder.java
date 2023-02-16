@@ -39,6 +39,7 @@ class RequestResponder implements Runnable {
 
 						if (path.equals("")) {
 							sendBadRequestResponse(this.connection);
+							connection.close();
 							return;
 						}
 
@@ -48,9 +49,11 @@ class RequestResponder implements Runnable {
 								throw new InvalidPathException(requested_file.toString(), "File cannot be sent");
 							}
 							sendFile(this.connection, protocol, requested_file);
+							connection.close();
 						}
 						catch (InvalidPathException e){
 							sendFileNotFoundResponse(this.connection, protocol);
+							connection.close();
 						}
 
 					} else {
