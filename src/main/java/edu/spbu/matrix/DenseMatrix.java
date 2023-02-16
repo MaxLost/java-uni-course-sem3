@@ -4,18 +4,15 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Scanner;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 public class DenseMatrix implements Matrix
 {
 
 	private final double[][] data;
-	public final int row_count;
-	public final int col_count;
+	public final int rowCount;
+	public final int colCount;
 	private final int hashCode;
 
 	/**
@@ -32,18 +29,18 @@ public class DenseMatrix implements Matrix
 			}
 
 			if (rows.size() == 0 || rows.get(0).split(" ").length == 0) {
-				this.row_count = 0;
-				this.col_count = 0;
+				this.rowCount = 0;
+				this.colCount = 0;
 				this.data = new double[0][0];
 			}
 			else {
-				this.row_count = rows.size();
-				this.col_count = rows.get(0).split(" ").length;
-				double[][] data = new double[this.row_count][this.col_count];
+				this.rowCount = rows.size();
+				this.colCount = rows.get(0).split(" ").length;
+				double[][] data = new double[this.rowCount][this.colCount];
 
-				for (int i = 0; i < this.row_count; i++) {
+				for (int i = 0; i < this.rowCount; i++) {
 					String[] line = rows.get(i).split(" ");
-					for (int j = 0; j < this.col_count; j++) {
+					for (int j = 0; j < this.colCount; j++) {
 						data[i][j] = Double.parseDouble(line[j]);
 					}
 				}
@@ -59,16 +56,16 @@ public class DenseMatrix implements Matrix
 		}
 	}
 
-	public DenseMatrix(int row_count, int col_count, double[][] data) {
-		if (row_count <= 0 | col_count <= 0) {
-			this.row_count = 0;
-			this.col_count = 0;
+	public DenseMatrix(int rowCount, int colCount, double[][] data) {
+		if (rowCount <= 0 | colCount <= 0) {
+			this.rowCount = 0;
+			this.colCount = 0;
 			this.data = new double[0][0];
 			this.hashCode = this.hashCode();
 		}
-		else if (row_count == data.length & col_count == data[0].length) {
-			this.row_count = row_count;
-			this.col_count = col_count;
+		else if (rowCount == data.length & colCount == data[0].length) {
+			this.rowCount = rowCount;
+			this.colCount = colCount;
 			this.data = data;
 			this.hashCode = this.hashCode();
 		}
@@ -78,7 +75,7 @@ public class DenseMatrix implements Matrix
 	}
 
 	@Override public double getElement(int x, int y) {
-		if (y >= this.row_count | x >= this.col_count) {
+		if (y >= this.rowCount | x >= this.colCount) {
 			throw new RuntimeException("Invalid coordinates");
 		}
 		else {
@@ -108,21 +105,21 @@ public class DenseMatrix implements Matrix
 
 	private Matrix mulDense(DenseMatrix m){
 
-		if (this.col_count == m.row_count) {
+		if (this.colCount == m.rowCount) {
 
-			if (this.row_count == 0 | m.col_count == 0) {
+			if (this.rowCount == 0 | m.colCount == 0) {
 				return new DenseMatrix(0, 0, new double[0][0]);
 			}
 
-			double[][] result = new double[this.row_count][m.col_count];
-			for (int i = 0; i < this.row_count; i++) {
-				for (int j = 0; j < m.col_count; j++) {
-					for (int k = 0; k < this.col_count; k++) {
+			double[][] result = new double[this.rowCount][m.colCount];
+			for (int i = 0; i < this.rowCount; i++) {
+				for (int j = 0; j < m.colCount; j++) {
+					for (int k = 0; k < this.colCount; k++) {
 						result[i][j] += this.getElement(k, i) * m.getElement(j, k);
 					}
 				}
 			}
-			return new DenseMatrix(this.row_count, m.col_count, result);
+			return new DenseMatrix(this.rowCount, m.colCount, result);
 		}
 		else {
 			throw new RuntimeException("Unable to multiply matrices due to wrong sizes");
@@ -130,12 +127,10 @@ public class DenseMatrix implements Matrix
 	}
 
 	private Matrix mulSparse(SparseMatrix m) {
-		if (this.col_count == m.row_count){
-			if (this.row_count == 0 | m.col_count == 0) {
+		if (this.colCount == m.row_count){
+			if (this.rowCount == 0 | m.col_count == 0) {
 				return new SparseMatrix(0, 0, null);
 			}
-
-			HashMap<Integer, HashMap<Integer, Double>> data = new HashMap<>();
 
 			SparseMatrix x = (SparseMatrix) m.transpose();
 			DenseMatrix y = (DenseMatrix) this.transpose();
@@ -160,23 +155,23 @@ public class DenseMatrix implements Matrix
 			DenseMatrix m = (DenseMatrix) o;
 			DenseMatrix n = this;
 
-			if (this.col_count == m.row_count) {
-				if (this.row_count == 0 | m.col_count == 0) {
+			if (this.colCount == m.rowCount) {
+				if (this.rowCount == 0 | m.colCount == 0) {
 					return new DenseMatrix(0, 0, null);
 				}
 
-				MulTaskManager task_manager = new MulTaskManager(n.row_count);
-				double[][] data = new double[n.row_count][m.col_count];
+				MulTaskManager task_manager = new MulTaskManager(n.rowCount);
+				double[][] data = new double[n.rowCount][m.colCount];
 
 				class Multiplicator implements Runnable {
 					@Override
 					public void run() {
 						Integer row;
 						while ((row = task_manager.next()) != null){
-							double[] result = new double[m.col_count];
+							double[] result = new double[m.colCount];
 
-							for (int i = 0; i < m.col_count; i++) {
-								for (int j = 0; j < n.col_count; j++) {
+							for (int i = 0; i < m.colCount; i++) {
+								for (int j = 0; j < n.colCount; j++) {
 									result[i] += n.getElement(j, row) * m.getElement(i, j);
 								}
 							}
@@ -198,7 +193,7 @@ public class DenseMatrix implements Matrix
 					throw new RuntimeException("Multiplication failed! Try again!", e);
 				}
 
-				return new DenseMatrix(n.row_count, m.col_count, data);
+				return new DenseMatrix(n.rowCount, m.colCount, data);
 			}
 			else {
 				throw new RuntimeException("Unable to multiply matrices due to wrong sizes");
@@ -209,17 +204,17 @@ public class DenseMatrix implements Matrix
 	}
 
 	public Matrix transpose() {
-		if (this.row_count == 0 | this.col_count == 0) {
+		if (this.rowCount == 0 | this.colCount == 0) {
 			return this;
 		}
 		else {
-			double[][] result = new double[this.col_count][this.row_count];
-			for (int i = 0; i < this.row_count; i++) {
-				for (int j = 0; j < this.col_count; j++) {
+			double[][] result = new double[this.colCount][this.rowCount];
+			for (int i = 0; i < this.rowCount; i++) {
+				for (int j = 0; j < this.colCount; j++) {
 					result[j][i] = this.getElement(j, i);
 				}
 			}
-			return new DenseMatrix(this.col_count, this.row_count, result);
+			return new DenseMatrix(this.colCount, this.rowCount, result);
 		}
 	}
 
@@ -228,13 +223,13 @@ public class DenseMatrix implements Matrix
 		String caller = String.valueOf( (new Throwable().getStackTrace())[1] );
 		if (caller.equals("DenseMatrix")) {
 
-			if (this.row_count == 0 | this.col_count == 0) {
+			if (this.rowCount == 0 | this.colCount == 0) {
 				return 0;
 			}
 			int a = 0, b = 0;
-			for (int i = 0; i < Math.min(this.col_count, this.row_count); i++) {
+			for (int i = 0; i < Math.min(this.colCount, this.rowCount); i++) {
 				a += this.getElement(i, i);
-				b += this.getElement(this.col_count - i - 1, i);
+				b += this.getElement(this.colCount - i - 1, i);
 			}
 
 			return a ^ b;
@@ -266,18 +261,18 @@ public class DenseMatrix implements Matrix
 
 	private boolean equalsDense(DenseMatrix other){
 
-		if (this.row_count != other.row_count | this.col_count != other.col_count) {
+		if (this.rowCount != other.rowCount | this.colCount != other.colCount) {
 			return false;
 		}
 
 		if (this.hashCode() == other.hashCode()) {
 
-			if (this.col_count == 0 | this.row_count == 0) {
+			if (this.colCount == 0 | this.rowCount == 0) {
 				return true;
 			}
 
-			for (int i = 0; i < this.col_count; i++) {
-				for (int j = 0; j < this.row_count; j++) {
+			for (int i = 0; i < this.colCount; i++) {
+				for (int j = 0; j < this.rowCount; j++) {
 					if (Math.abs(Math.abs(other.getElement(i, j)) - Math.abs(this.getElement(i, j))) > EPSILON) {
 						return false;
 					}
@@ -290,16 +285,16 @@ public class DenseMatrix implements Matrix
 	}
 
 	private boolean equalsSparse(SparseMatrix other) {
-		if (this.row_count != other.row_count | this.col_count != other.col_count) {
+		if (this.rowCount != other.row_count | this.colCount != other.col_count) {
 			return false;
 		}
 
-		if (this.col_count == 0 | this.row_count == 0) {
+		if (this.colCount == 0 | this.rowCount == 0) {
 			return true;
 		}
 
-		for (int i = 0; i < this.col_count; i++) {
-			for (int j = 0; j < this.row_count; j++) {
+		for (int i = 0; i < this.colCount; i++) {
+			for (int j = 0; j < this.rowCount; j++) {
 				if (Math.abs(Math.abs(other.getElement(i, j)) - Math.abs(this.getElement(i, j))) > EPSILON) {
 					return false;
 				}
@@ -310,8 +305,8 @@ public class DenseMatrix implements Matrix
 
 	@Override public String toString() {
 		StringBuilder str = new StringBuilder();
-		for (int i = 0; i < this.row_count; i++) {
-			for (int j = 0; j < this.col_count; j++) {
+		for (int i = 0; i < this.rowCount; i++) {
+			for (int j = 0; j < this.colCount; j++) {
 				str.append(this.getElement(j, i)).append(" ");
 			}
 			str.append("\n");

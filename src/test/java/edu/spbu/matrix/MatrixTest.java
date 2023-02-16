@@ -9,8 +9,8 @@ public class MatrixTest
 	@Test
 	public void loadDenseMatrix() {
 		DenseMatrix m = new DenseMatrix("dense_test/load_test.txt");
-		double[][] expected_data = { {1.0, 2.0, 0}, {3.0, 4.0, 1.0}, {10.0, 8.0, 0} };
-		DenseMatrix expected = new DenseMatrix(3, 3, expected_data);
+		double[][] expectedData = { {1.0, 2.0, 0}, {3.0, 4.0, 1.0}, {10.0, 8.0, 0} };
+		DenseMatrix expected = new DenseMatrix(3, 3, expectedData);
 		assertEquals(expected, m);
 	}
 
@@ -278,7 +278,7 @@ public class MatrixTest
 		System.out.println("1 loaded");
 		Matrix m2 = new SparseMatrix("m2.txt");
 		System.out.println("2 loaded");
-		long start = 0;
+		long start;
 		start = System.currentTimeMillis();
 		SparseMatrix result1 = (SparseMatrix) m1.mul(m2);
 		System.out.println("Mul Sparse Matrix time: " +(System.currentTimeMillis() - start));

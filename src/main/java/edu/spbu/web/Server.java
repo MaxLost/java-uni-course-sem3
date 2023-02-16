@@ -34,17 +34,17 @@ public class Server {
 	}
 
 	public void run(){
-		Server this_server = this;
-		List<Thread> thread_pool = Collections.synchronizedList(new ArrayList<Thread>());
+		Server thisServer = this;
+		List<Thread> threadList = Collections.synchronizedList(new ArrayList<Thread>());
 		Thread server_thread = new Thread("Server Thread") {
 			public void run() {
 				while (true) {
 					try {
-						Socket x = this_server.socket.accept();
+						Socket x = thisServer.socket.accept();
 						System.out.println("Connection: " + x.getInetAddress());
-						Thread thread = new Thread(new RequestResponder(x, this_server));
+						Thread thread = new Thread(new RequestResponder(x, thisServer));
 						thread.start();
-						thread_pool.add(thread);
+						threadList.add(thread);
 					} catch (SocketException se){
 						System.out.println("Server stopped");
 						return;
@@ -59,11 +59,11 @@ public class Server {
 		server_thread.start();
 		System.out.println("Server started");
 
-		try (Scanner stdin = new Scanner(System.in)){
-			String line = stdin.nextLine();
+		try (Scanner stdIn = new Scanner(System.in)){
+			String line = stdIn.nextLine();
 			while (true) {
 				if (line.equals("stop")){
-					for (Thread t : thread_pool) {
+					for (Thread t : threadList) {
 						try {
 							t.join();
 						} catch (InterruptedException e) {
@@ -73,7 +73,7 @@ public class Server {
 					this.socket.close();
 					return;
 				}
-				line = stdin.nextLine();
+				line = stdIn.nextLine();
 			}
 		} catch (IOException e){
 			throw new RuntimeException("Server can't receive messages, please restart it", e);

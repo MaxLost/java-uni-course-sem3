@@ -100,15 +100,15 @@ public class SparseMatrix implements Matrix
 
 	private Matrix mulDense(DenseMatrix m){
 
-		if (this.col_count == m.row_count){
-			if (this.row_count == 0 | m.col_count == 0) {
+		if (this.col_count == m.rowCount){
+			if (this.row_count == 0 | m.colCount == 0) {
 				return new SparseMatrix(0, 0, null);
 			}
 
 			HashMap<Integer, HashMap<Integer, Double>> data = new HashMap<>();
 
 			for (Map.Entry<Integer, HashMap<Integer, Double>> row: this.data.entrySet()){
-				for (int column = 0; column < m.col_count; column++){
+				for (int column = 0; column < m.colCount; column++){
 					double sum = 0;
 					for (Map.Entry<Integer, Double> element : row.getValue().entrySet()) {
 						sum += element.getValue() * m.getElement(column, element.getKey());
@@ -119,7 +119,7 @@ public class SparseMatrix implements Matrix
 					}
 				}
 			}
-			return new SparseMatrix(this.row_count, m.col_count, data);
+			return new SparseMatrix(this.row_count, m.colCount, data);
 
 		} else {
 			throw new RuntimeException("Unable to multiply matrices due to wrong sizes");
@@ -289,7 +289,7 @@ public class SparseMatrix implements Matrix
 
 	private boolean equalsDense(DenseMatrix o) {
 
-		if (this.row_count != o.row_count | this.col_count != o.col_count) {
+		if (this.row_count != o.rowCount | this.col_count != o.colCount) {
 			return false;
 		}
 
